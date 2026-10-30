@@ -1,6 +1,333 @@
 amount,transaction_type,category,merchant,description,transaction_date
-5500,income,Salary,Acme Corp,Monthly salary,2026-10-01
-850,expense,Housing,City Apartments,Rent contribution,2026-10-02
-74.50,expense,Groceries,Fresh Market,Weekly groceries,2026-10-04
-32.00,expense,Transport,Metro,Commute pass,2026-10-06
-18.99,expense,Entertainment,StreamBox,Subscription,2026-10-09
+5500.0,income,Salary,Northstar Labs,Monthly salary deposit - May 2026,2026-05-01
+1650.0,expense,Housing,City View Apartments,Monthly apartment rent,2026-05-01
+16.69,expense,Food,Corner Kitchen Deli,Lunch sandwich & drink,2026-05-01
+95.75,expense,Food,Fresh Market,Weekly fresh produce and groceries,2026-05-01
+62.54,expense,Food,Whole Foods,Organic groceries & staples,2026-05-02
+62.85,expense,Food,Trader Joe's,Grocery run & snacks,2026-05-02
+76.54,expense,Food,Trader Joe's,Grocery run & snacks,2026-05-02
+47.32,expense,Transport,Chevron,Fuel refill,2026-05-03
+88.78,expense,Shopping,Amazon,Home essentials and books,2026-05-03
+19.42,expense,Transport,Uber,Rideshare trip,2026-05-04
+132.86,expense,Bills,Metro Power & Light,Electric and gas utility bill,2026-05-05
+75.0,expense,Bills,FiberNet Communications,Gigabit fiber internet service,2026-05-05
+71.92,expense,Food,Fresh Market,Weekly fresh produce and groceries,2026-05-05
+99.73,expense,Food,Fresh Market,Weekly fresh produce and groceries,2026-05-06
+19.34,expense,Entertainment,Books & Brews,Weekend book and tea,2026-05-07
+14.03,expense,Food,Artisan Cafe,Morning espresso and pastry,2026-05-07
+19.99,expense,Subscriptions,StreamBox,Monthly video streaming package,2026-05-08
+11.99,expense,Subscriptions,Spotify Music,Premium audio subscription,2026-05-08
+49.0,expense,Subscriptions,Peak Fitness Gym,Monthly gym membership,2026-05-08
+48.44,expense,Food,Fresh Market,Weekly fresh produce and groceries,2026-05-08
+109.15,expense,Food,Fresh Market,Weekly fresh produce and groceries,2026-05-09
+110.85,expense,Food,Whole Foods,Organic groceries & staples,2026-05-10
+17.91,expense,Food,Corner Kitchen Deli,Lunch sandwich & drink,2026-05-10
+75.6,expense,Shopping,Amazon,Home essentials and books,2026-05-10
+56.66,expense,Shopping,Target,Household items and toiletries,2026-05-11
+45.81,expense,Entertainment,Steam Games,Video game digital purchase,2026-05-12
+78.95,expense,Shopping,Target,Household items and toiletries,2026-05-13
+65.79,expense,Shopping,IKEA Home,Kitchen supplies & organizers,2026-05-13
+51.69,expense,Entertainment,Acoustic Lounge,Concert tickets,2026-05-14
+20.43,expense,Entertainment,Books & Brews,Weekend book and tea,2026-05-15
+118.5,expense,Shopping,Nike Store,Running apparel,2026-05-16
+20.83,expense,Transport,Uber,Rideshare trip,2026-05-17
+38.89,expense,Transport,Metro Transit,Subway card reload,2026-05-18
+43.24,expense,Entertainment,Steam Games,Video game digital purchase,2026-05-18
+103.59,expense,Shopping,IKEA Home,Kitchen supplies & organizers,2026-05-18
+45.76,expense,Transport,Chevron,Fuel refill,2026-05-19
+37.65,expense,Entertainment,Cinema City,Movie tickets and concessions,2026-05-20
+12.88,expense,Food,Artisan Cafe,Morning espresso and pastry,2026-05-20
+64.48,expense,Shopping,Nike Store,Running apparel,2026-05-20
+37.38,expense,Transport,Uber,Rideshare trip,2026-05-21
+41.76,expense,Transport,Metro Transit,Subway card reload,2026-05-22
+11.68,expense,Food,Artisan Cafe,Morning espresso and pastry,2026-05-22
+74.71,expense,Shopping,Amazon,Home essentials and books,2026-05-23
+23.67,expense,Food,Corner Kitchen Deli,Lunch sandwich & drink,2026-05-24
+63.07,expense,Food,Fresh Market,Weekly fresh produce and groceries,2026-05-25
+22.14,expense,Transport,Metro Transit,Subway card reload,2026-05-25
+13.01,expense,Food,Artisan Cafe,Morning espresso and pastry,2026-05-26
+42.95,expense,Transport,Shell Oil,Vehicle gas refuel,2026-05-27
+62.87,expense,Transport,Shell Oil,Vehicle gas refuel,2026-05-28
+72.2,expense,Shopping,Target,Household items and toiletries,2026-05-28
+18.82,expense,Food,Corner Kitchen Deli,Lunch sandwich & drink,2026-05-28
+34.16,expense,Food,Trader Joe's,Grocery run & snacks,2026-05-29
+8.46,expense,Food,Artisan Cafe,Morning espresso and pastry,2026-05-29
+62.17,expense,Food,Fresh Market,Weekly fresh produce and groceries,2026-05-30
+33.83,expense,Entertainment,Cinema City,Movie tickets and concessions,2026-05-31
+77.14,expense,Food,Whole Foods,Organic groceries & staples,2026-05-31
+11.4,expense,Food,Artisan Cafe,Morning espresso and pastry,2026-05-31
+5500.0,income,Salary,Northstar Labs,Monthly salary deposit - June 2026,2026-06-01
+1650.0,expense,Housing,City View Apartments,Monthly apartment rent,2026-06-01
+36.95,expense,Transport,Chevron,Fuel refill,2026-06-01
+54.46,expense,Transport,Chevron,Fuel refill,2026-06-03
+117.67,expense,Bills,Metro Power & Light,Electric and gas utility bill,2026-06-05
+75.0,expense,Bills,FiberNet Communications,Gigabit fiber internet service,2026-06-05
+22.81,expense,Food,Corner Kitchen Deli,Lunch sandwich & drink,2026-06-05
+42.36,expense,Food,Trader Joe's,Grocery run & snacks,2026-06-05
+26.18,expense,Transport,Uber,Rideshare trip,2026-06-06
+7.33,expense,Food,Artisan Cafe,Morning espresso and pastry,2026-06-07
+107.27,expense,Shopping,Amazon,Home essentials and books,2026-06-07
+22.48,expense,Entertainment,Steam Games,Video game digital purchase,2026-06-07
+19.99,expense,Subscriptions,StreamBox,Monthly video streaming package,2026-06-08
+11.99,expense,Subscriptions,Spotify Music,Premium audio subscription,2026-06-08
+49.0,expense,Subscriptions,Peak Fitness Gym,Monthly gym membership,2026-06-08
+132.2,expense,Food,Whole Foods,Organic groceries & staples,2026-06-08
+81.22,expense,Food,Whole Foods,Organic groceries & staples,2026-06-09
+50.11,expense,Transport,Chevron,Fuel refill,2026-06-10
+52.8,expense,Shopping,IKEA Home,Kitchen supplies & organizers,2026-06-10
+39.2,expense,Entertainment,Cinema City,Movie tickets and concessions,2026-06-11
+36.71,expense,Transport,Shell Oil,Vehicle gas refuel,2026-06-13
+37.06,expense,Transport,Shell Oil,Vehicle gas refuel,2026-06-13
+787.82,income,Freelance,TechConsult LLC,Freelance advisory payout,2026-06-15
+41.05,expense,Entertainment,Steam Games,Video game digital purchase,2026-06-15
+36.56,expense,Transport,Uber,Rideshare trip,2026-06-18
+16.63,expense,Food,Corner Kitchen Deli,Lunch sandwich & drink,2026-06-18
+3450.0,expense,Shopping,Apex Ultra Electronics,Unusually large luxury 8K monitor & workstation purchase,2026-06-18
+93.86,expense,Shopping,Nike Store,Running apparel,2026-06-19
+32.54,expense,Entertainment,Cinema City,Movie tickets and concessions,2026-06-20
+23.68,expense,Entertainment,Cinema City,Movie tickets and concessions,2026-06-20
+15.46,expense,Food,Corner Kitchen Deli,Lunch sandwich & drink,2026-06-20
+54.02,expense,Food,Trader Joe's,Grocery run & snacks,2026-06-21
+106.99,expense,Shopping,Nike Store,Running apparel,2026-06-22
+80.77,expense,Shopping,Amazon,Home essentials and books,2026-06-23
+43.47,expense,Transport,Metro Transit,Subway card reload,2026-06-23
+111.73,expense,Food,Fresh Market,Weekly fresh produce and groceries,2026-06-23
+20.65,expense,Food,Corner Kitchen Deli,Lunch sandwich & drink,2026-06-24
+70.62,expense,Shopping,Target,Household items and toiletries,2026-06-24
+35.92,expense,Transport,Uber,Rideshare trip,2026-06-25
+77.82,expense,Shopping,Amazon,Home essentials and books,2026-06-25
+22.31,expense,Shopping,Amazon,Home essentials and books,2026-06-25
+19.55,expense,Transport,Uber,Rideshare trip,2026-06-26
+46.58,expense,Transport,Chevron,Fuel refill,2026-06-26
+39.55,expense,Entertainment,Steam Games,Video game digital purchase,2026-06-27
+47.89,expense,Transport,Shell Oil,Vehicle gas refuel,2026-06-28
+23.89,expense,Food,Corner Kitchen Deli,Lunch sandwich & drink,2026-06-28
+51.55,expense,Entertainment,Acoustic Lounge,Concert tickets,2026-06-29
+71.53,expense,Food,Fresh Market,Weekly fresh produce and groceries,2026-06-29
+56.66,expense,Entertainment,Steam Games,Video game digital purchase,2026-06-30
+93.45,expense,Food,Trader Joe's,Grocery run & snacks,2026-06-30
+5500.0,income,Salary,Northstar Labs,Monthly salary deposit - July 2026,2026-07-01
+1650.0,expense,Housing,City View Apartments,Monthly apartment rent,2026-07-01
+26.13,expense,Entertainment,Cinema City,Movie tickets and concessions,2026-07-01
+31.64,expense,Entertainment,Books & Brews,Weekend book and tea,2026-07-01
+68.53,expense,Shopping,Nike Store,Running apparel,2026-07-02
+135.3,expense,Shopping,IKEA Home,Kitchen supplies & organizers,2026-07-02
+23.98,expense,Entertainment,Steam Games,Video game digital purchase,2026-07-02
+44.49,expense,Food,Trader Joe's,Grocery run & snacks,2026-07-03
+72.75,expense,Shopping,IKEA Home,Kitchen supplies & organizers,2026-07-03
+59.31,expense,Entertainment,Acoustic Lounge,Concert tickets,2026-07-03
+134.84,expense,Shopping,Nike Store,Running apparel,2026-07-04
+15.96,expense,Food,Corner Kitchen Deli,Lunch sandwich & drink,2026-07-04
+133.13,expense,Bills,Metro Power & Light,Electric and gas utility bill,2026-07-05
+75.0,expense,Bills,FiberNet Communications,Gigabit fiber internet service,2026-07-05
+87.65,expense,Food,Whole Foods,Organic groceries & staples,2026-07-05
+29.63,expense,Transport,Metro Transit,Subway card reload,2026-07-06
+16.98,expense,Transport,Uber,Rideshare trip,2026-07-06
+45.93,expense,Transport,Shell Oil,Vehicle gas refuel,2026-07-07
+19.99,expense,Subscriptions,StreamBox,Monthly video streaming package,2026-07-08
+11.99,expense,Subscriptions,Spotify Music,Premium audio subscription,2026-07-08
+49.0,expense,Subscriptions,Peak Fitness Gym,Monthly gym membership,2026-07-08
+21.3,expense,Food,Corner Kitchen Deli,Lunch sandwich & drink,2026-07-09
+19.58,expense,Food,Corner Kitchen Deli,Lunch sandwich & drink,2026-07-09
+20.1,expense,Food,Corner Kitchen Deli,Lunch sandwich & drink,2026-07-10
+114.19,expense,Food,Whole Foods,Organic groceries & staples,2026-07-10
+24.93,expense,Transport,Uber,Rideshare trip,2026-07-11
+79.39,expense,Shopping,Nike Store,Running apparel,2026-07-11
+26.23,expense,Transport,Uber,Rideshare trip,2026-07-11
+123.5,expense,Food,Whole Foods,Organic groceries & staples,2026-07-12
+46.97,expense,Shopping,Amazon,Home essentials and books,2026-07-13
+62.94,expense,Shopping,Nike Store,Running apparel,2026-07-13
+45.28,expense,Entertainment,Steam Games,Video game digital purchase,2026-07-13
+48.47,expense,Food,Fresh Market,Weekly fresh produce and groceries,2026-07-14
+31.39,expense,Transport,Metro Transit,Subway card reload,2026-07-15
+47.33,expense,Entertainment,Steam Games,Video game digital purchase,2026-07-15
+79.52,expense,Food,Whole Foods,Organic groceries & staples,2026-07-15
+103.38,expense,Food,Fresh Market,Weekly fresh produce and groceries,2026-07-16
+10.45,expense,Food,Artisan Cafe,Morning espresso and pastry,2026-07-16
+32.5,expense,Entertainment,Cinema City,Movie tickets and concessions,2026-07-17
+135.75,expense,Shopping,Nike Store,Running apparel,2026-07-17
+53.59,expense,Transport,Chevron,Fuel refill,2026-07-18
+57.31,expense,Transport,Shell Oil,Vehicle gas refuel,2026-07-18
+32.54,expense,Transport,Uber,Rideshare trip,2026-07-18
+10.62,expense,Food,Artisan Cafe,Morning espresso and pastry,2026-07-19
+66.2,expense,Food,Whole Foods,Organic groceries & staples,2026-07-19
+23.82,expense,Food,Corner Kitchen Deli,Lunch sandwich & drink,2026-07-20
+75.92,expense,Food,Trader Joe's,Grocery run & snacks,2026-07-22
+33.62,expense,Transport,Chevron,Fuel refill,2026-07-24
+2850.0,expense,Bills,Metro Emergency Dental,Unusually large emergency surgical procedure,2026-07-24
+14.54,expense,Food,Artisan Cafe,Morning espresso and pastry,2026-07-25
+9.73,expense,Food,Artisan Cafe,Morning espresso and pastry,2026-07-25
+96.9,expense,Shopping,IKEA Home,Kitchen supplies & organizers,2026-07-27
+58.27,expense,Shopping,Target,Household items and toiletries,2026-07-28
+62.32,expense,Food,Whole Foods,Organic groceries & staples,2026-07-28
+118.28,expense,Shopping,IKEA Home,Kitchen supplies & organizers,2026-07-29
+42.86,expense,Entertainment,Cinema City,Movie tickets and concessions,2026-07-30
+22.1,expense,Transport,Metro Transit,Subway card reload,2026-07-30
+17.26,expense,Entertainment,Steam Games,Video game digital purchase,2026-07-31
+5500.0,income,Salary,Northstar Labs,Monthly salary deposit - August 2026,2026-08-01
+1650.0,expense,Housing,City View Apartments,Monthly apartment rent,2026-08-01
+17.71,expense,Food,Corner Kitchen Deli,Lunch sandwich & drink,2026-08-01
+80.18,expense,Food,Whole Foods,Organic groceries & staples,2026-08-02
+101.18,expense,Food,Fresh Market,Weekly fresh produce and groceries,2026-08-02
+16.47,expense,Food,Corner Kitchen Deli,Lunch sandwich & drink,2026-08-02
+116.22,expense,Food,Fresh Market,Weekly fresh produce and groceries,2026-08-04
+91.6,expense,Food,Fresh Market,Weekly fresh produce and groceries,2026-08-04
+113.56,expense,Food,Whole Foods,Organic groceries & staples,2026-08-04
+113.2,expense,Bills,Metro Power & Light,Electric and gas utility bill,2026-08-05
+75.0,expense,Bills,FiberNet Communications,Gigabit fiber internet service,2026-08-05
+69.26,expense,Shopping,Nike Store,Running apparel,2026-08-05
+90.45,expense,Shopping,Amazon,Home essentials and books,2026-08-06
+15.19,expense,Food,Corner Kitchen Deli,Lunch sandwich & drink,2026-08-06
+19.99,expense,Subscriptions,StreamBox,Monthly video streaming package,2026-08-08
+11.99,expense,Subscriptions,Spotify Music,Premium audio subscription,2026-08-08
+49.0,expense,Subscriptions,Peak Fitness Gym,Monthly gym membership,2026-08-08
+80.62,expense,Shopping,IKEA Home,Kitchen supplies & organizers,2026-08-08
+36.62,expense,Food,Trader Joe's,Grocery run & snacks,2026-08-09
+92.07,expense,Shopping,Amazon,Home essentials and books,2026-08-09
+10.14,expense,Food,Artisan Cafe,Morning espresso and pastry,2026-08-10
+12.0,expense,Food,Artisan Cafe,Morning espresso and pastry,2026-08-10
+56.98,expense,Transport,Chevron,Fuel refill,2026-08-12
+55.0,expense,Shopping,Target,Household items and toiletries,2026-08-13
+107.35,expense,Shopping,Nike Store,Running apparel,2026-08-13
+85.09,expense,Shopping,IKEA Home,Kitchen supplies & organizers,2026-08-14
+82.4,expense,Shopping,Nike Store,Running apparel,2026-08-14
+65.92,expense,Food,Fresh Market,Weekly fresh produce and groceries,2026-08-14
+602.86,income,Freelance,TechConsult LLC,Freelance advisory payout,2026-08-15
+40.75,expense,Transport,Chevron,Fuel refill,2026-08-15
+20.0,expense,Transport,Uber,Rideshare trip,2026-08-15
+78.77,expense,Shopping,Nike Store,Running apparel,2026-08-16
+33.88,expense,Entertainment,Cinema City,Movie tickets and concessions,2026-08-17
+76.8,expense,Food,Trader Joe's,Grocery run & snacks,2026-08-17
+109.28,expense,Shopping,IKEA Home,Kitchen supplies & organizers,2026-08-18
+47.89,expense,Shopping,Amazon,Home essentials and books,2026-08-19
+9.64,expense,Food,Artisan Cafe,Morning espresso and pastry,2026-08-20
+1980.0,expense,Entertainment,Grand Royale Resort Casino,Unusually large VIP resort booking and casino charge,2026-08-20
+9.31,expense,Food,Artisan Cafe,Morning espresso and pastry,2026-08-21
+81.06,expense,Shopping,Nike Store,Running apparel,2026-08-21
+65.16,expense,Shopping,Nike Store,Running apparel,2026-08-22
+39.88,expense,Shopping,Target,Household items and toiletries,2026-08-23
+116.59,expense,Shopping,Nike Store,Running apparel,2026-08-23
+37.57,expense,Transport,Uber,Rideshare trip,2026-08-24
+74.34,expense,Shopping,Nike Store,Running apparel,2026-08-24
+98.1,expense,Food,Fresh Market,Weekly fresh produce and groceries,2026-08-24
+86.5,expense,Food,Fresh Market,Weekly fresh produce and groceries,2026-08-25
+68.21,expense,Food,Whole Foods,Organic groceries & staples,2026-08-26
+19.16,expense,Food,Corner Kitchen Deli,Lunch sandwich & drink,2026-08-26
+63.94,expense,Food,Fresh Market,Weekly fresh produce and groceries,2026-08-27
+75.05,expense,Food,Fresh Market,Weekly fresh produce and groceries,2026-08-28
+56.38,expense,Food,Fresh Market,Weekly fresh produce and groceries,2026-08-28
+62.24,expense,Shopping,Nike Store,Running apparel,2026-08-28
+47.76,expense,Transport,Chevron,Fuel refill,2026-08-29
+9.73,expense,Food,Artisan Cafe,Morning espresso and pastry,2026-08-30
+87.31,expense,Entertainment,Acoustic Lounge,Concert tickets,2026-08-30
+7.01,expense,Food,Artisan Cafe,Morning espresso and pastry,2026-08-31
+43.79,expense,Entertainment,Cinema City,Movie tickets and concessions,2026-08-31
+47.2,expense,Food,Trader Joe's,Grocery run & snacks,2026-08-31
+5500.0,income,Salary,Northstar Labs,Monthly salary deposit - September 2026,2026-09-01
+1650.0,expense,Housing,City View Apartments,Monthly apartment rent,2026-09-01
+35.08,expense,Transport,Shell Oil,Vehicle gas refuel,2026-09-02
+16.72,expense,Transport,Uber,Rideshare trip,2026-09-03
+65.69,expense,Food,Whole Foods,Organic groceries & staples,2026-09-04
+96.67,expense,Bills,Metro Power & Light,Electric and gas utility bill,2026-09-05
+75.0,expense,Bills,FiberNet Communications,Gigabit fiber internet service,2026-09-05
+54.36,expense,Shopping,Target,Household items and toiletries,2026-09-05
+34.19,expense,Transport,Uber,Rideshare trip,2026-09-06
+81.52,expense,Food,Trader Joe's,Grocery run & snacks,2026-09-06
+92.33,expense,Shopping,Nike Store,Running apparel,2026-09-07
+31.39,expense,Transport,Uber,Rideshare trip,2026-09-07
+19.99,expense,Subscriptions,StreamBox,Monthly video streaming package,2026-09-08
+11.99,expense,Subscriptions,Spotify Music,Premium audio subscription,2026-09-08
+49.0,expense,Subscriptions,Peak Fitness Gym,Monthly gym membership,2026-09-08
+43.38,expense,Transport,Chevron,Fuel refill,2026-09-08
+51.1,expense,Transport,Chevron,Fuel refill,2026-09-08
+22.28,expense,Transport,Metro Transit,Subway card reload,2026-09-08
+109.96,expense,Shopping,Amazon,Home essentials and books,2026-09-09
+103.98,expense,Shopping,Nike Store,Running apparel,2026-09-09
+57.17,expense,Shopping,Target,Household items and toiletries,2026-09-09
+59.86,expense,Entertainment,Steam Games,Video game digital purchase,2026-09-10
+57.2,expense,Transport,Chevron,Fuel refill,2026-09-10
+30.74,expense,Transport,Uber,Rideshare trip,2026-09-11
+83.06,expense,Food,Whole Foods,Organic groceries & staples,2026-09-12
+32.46,expense,Entertainment,Cinema City,Movie tickets and concessions,2026-09-12
+15.28,expense,Food,Corner Kitchen Deli,Lunch sandwich & drink,2026-09-12
+37.13,expense,Entertainment,Cinema City,Movie tickets and concessions,2026-09-13
+33.41,expense,Transport,Chevron,Fuel refill,2026-09-13
+48.26,expense,Transport,Chevron,Fuel refill,2026-09-14
+44.56,expense,Shopping,Target,Household items and toiletries,2026-09-14
+69.71,expense,Food,Whole Foods,Organic groceries & staples,2026-09-15
+56.29,expense,Transport,Shell Oil,Vehicle gas refuel,2026-09-16
+86.42,expense,Food,Fresh Market,Weekly fresh produce and groceries,2026-09-16
+79.61,expense,Food,Fresh Market,Weekly fresh produce and groceries,2026-09-16
+142.26,expense,Shopping,IKEA Home,Kitchen supplies & organizers,2026-09-17
+130.99,expense,Shopping,IKEA Home,Kitchen supplies & organizers,2026-09-18
+7.73,expense,Food,Artisan Cafe,Morning espresso and pastry,2026-09-19
+10.82,expense,Food,Artisan Cafe,Morning espresso and pastry,2026-09-19
+28.35,expense,Entertainment,Cinema City,Movie tickets and concessions,2026-09-19
+34.05,expense,Transport,Uber,Rideshare trip,2026-09-20
+23.21,expense,Food,Corner Kitchen Deli,Lunch sandwich & drink,2026-09-20
+55.69,expense,Shopping,Target,Household items and toiletries,2026-09-21
+28.14,expense,Transport,Uber,Rideshare trip,2026-09-21
+35.13,expense,Transport,Uber,Rideshare trip,2026-09-22
+40.73,expense,Entertainment,Steam Games,Video game digital purchase,2026-09-22
+50.0,expense,Shopping,Amazon,Home essentials and books,2026-09-23
+24.56,expense,Entertainment,Books & Brews,Weekend book and tea,2026-09-24
+58.71,expense,Shopping,Target,Household items and toiletries,2026-09-25
+14.71,expense,Food,Artisan Cafe,Morning espresso and pastry,2026-09-25
+67.98,expense,Food,Whole Foods,Organic groceries & staples,2026-09-26
+56.65,expense,Food,Trader Joe's,Grocery run & snacks,2026-09-27
+32.64,expense,Shopping,Target,Household items and toiletries,2026-09-27
+83.78,expense,Shopping,Nike Store,Running apparel,2026-09-27
+34.75,expense,Transport,Uber,Rideshare trip,2026-09-28
+34.22,expense,Entertainment,Books & Brews,Weekend book and tea,2026-09-28
+1750.0,expense,Shopping,Haute Couture Boutique,Unusual luxury designer purchase,2026-09-28
+32.83,expense,Entertainment,Books & Brews,Weekend book and tea,2026-09-29
+62.61,expense,Food,Fresh Market,Weekly fresh produce and groceries,2026-09-29
+78.54,expense,Food,Trader Joe's,Grocery run & snacks,2026-09-30
+39.01,expense,Transport,Metro Transit,Subway card reload,2026-09-30
+5500.0,income,Salary,Northstar Labs,Monthly salary deposit - October 2026,2026-10-01
+1650.0,expense,Housing,City View Apartments,Monthly apartment rent,2026-10-01
+75.11,expense,Food,Trader Joe's,Grocery run & snacks,2026-10-01
+29.46,expense,Entertainment,Cinema City,Movie tickets and concessions,2026-10-01
+50.93,expense,Transport,Shell Oil,Vehicle gas refuel,2026-10-03
+38.85,expense,Shopping,Target,Household items and toiletries,2026-10-04
+48.11,expense,Transport,Chevron,Fuel refill,2026-10-04
+97.04,expense,Bills,Metro Power & Light,Electric and gas utility bill,2026-10-05
+75.0,expense,Bills,FiberNet Communications,Gigabit fiber internet service,2026-10-05
+111.03,expense,Food,Whole Foods,Organic groceries & staples,2026-10-05
+42.47,expense,Transport,Metro Transit,Subway card reload,2026-10-05
+30.91,expense,Transport,Uber,Rideshare trip,2026-10-05
+37.73,expense,Transport,Uber,Rideshare trip,2026-10-06
+65.13,expense,Entertainment,Acoustic Lounge,Concert tickets,2026-10-07
+19.99,expense,Subscriptions,StreamBox,Monthly video streaming package,2026-10-08
+11.99,expense,Subscriptions,Spotify Music,Premium audio subscription,2026-10-08
+49.0,expense,Subscriptions,Peak Fitness Gym,Monthly gym membership,2026-10-08
+19.81,expense,Entertainment,Books & Brews,Weekend book and tea,2026-10-08
+24.92,expense,Food,Corner Kitchen Deli,Lunch sandwich & drink,2026-10-09
+22.67,expense,Entertainment,Books & Brews,Weekend book and tea,2026-10-10
+102.13,expense,Shopping,Amazon,Home essentials and books,2026-10-11
+120.94,expense,Shopping,Nike Store,Running apparel,2026-10-11
+67.47,expense,Shopping,Target,Household items and toiletries,2026-10-12
+66.95,expense,Shopping,Target,Household items and toiletries,2026-10-13
+29.11,expense,Entertainment,Cinema City,Movie tickets and concessions,2026-10-13
+37.7,expense,Transport,Shell Oil,Vehicle gas refuel,2026-10-14
+4200.0,expense,Transport,Autobahn Transmission Specialists,Unusually large complete transmission rebuild repair,2026-10-14
+532.8,income,Freelance,TechConsult LLC,Freelance advisory payout,2026-10-15
+81.12,expense,Food,Trader Joe's,Grocery run & snacks,2026-10-15
+69.2,expense,Entertainment,Acoustic Lounge,Concert tickets,2026-10-15
+132.69,expense,Shopping,Nike Store,Running apparel,2026-10-16
+81.06,expense,Entertainment,Acoustic Lounge,Concert tickets,2026-10-16
+80.12,expense,Food,Fresh Market,Weekly fresh produce and groceries,2026-10-16
+137.38,expense,Food,Whole Foods,Organic groceries & staples,2026-10-18
+62.68,expense,Shopping,Nike Store,Running apparel,2026-10-18
+79.11,expense,Food,Fresh Market,Weekly fresh produce and groceries,2026-10-19
+129.58,expense,Shopping,IKEA Home,Kitchen supplies & organizers,2026-10-20
+37.52,expense,Entertainment,Cinema City,Movie tickets and concessions,2026-10-20
+36.14,expense,Transport,Uber,Rideshare trip,2026-10-21
+132.75,expense,Food,Whole Foods,Organic groceries & staples,2026-10-22
+36.36,expense,Transport,Shell Oil,Vehicle gas refuel,2026-10-23
+87.67,expense,Food,Trader Joe's,Grocery run & snacks,2026-10-25
+89.68,expense,Food,Whole Foods,Organic groceries & staples,2026-10-25
+27.98,expense,Entertainment,Books & Brews,Weekend book and tea,2026-10-25
+41.17,expense,Entertainment,Cinema City,Movie tickets and concessions,2026-10-26
+16.72,expense,Transport,Uber,Rideshare trip,2026-10-26
+60.66,expense,Transport,Shell Oil,Vehicle gas refuel,2026-10-27

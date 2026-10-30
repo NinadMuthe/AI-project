@@ -64,3 +64,55 @@ async def import_transactions(
             failed += 1
 
     return {"imported": imported, "failed": failed, "duplicates": duplicates}
+
+
+@router.post("/import-demo", status_code=status.HTTP_201_CREATED)
+async def import_demo_transactions(
+    db: AsyncSession = Depends(get_db),
+    user_id: int = Depends(get_current_user_id),
+):
+    from pathlib import Path
+    demo_file = Path(__file__).resolve().parents[3] / "backend" / "data" / "synthetic_transactions.csv"
+    if not demo_file.exists():
+        # Fallback to relative path if directory structure differs
+        demo_file = Path("backend/data/synthetic_transactions.csv")
+    if not demo_file.exists():
+        raise HTTPException(status_code=404, detail="Demo dataset synthetic_transactions.csv not found")
+
+    with open(demo_file, mode="r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        imported = duplicates = failed = 0
+        for row in reader:
+            try:
+                tx_in = TransactionCreate(
+                    amount=Decimal(row["amount"]),
+                    transaction_type=row["transaction_type"],
+                    category=row["category"],
+                    merchant=row.get("merchant"),
+                    description=row.get("description"),
+                    transaction_date=row["transaction_date"],
+                    source="demo",
+                )
+                existing = await db.execute(select(Transaction.id).where(
+                    Transaction.user_id == user_id,
+                    Transaction.amount == tx_in.amount,
+                    Transaction.transaction_type == tx_in.transaction_type.value,
+                    Transaction.category == tx_in.category,
+                    Transaction.merchant == tx_in.merchant,
+                    Transaction.transaction_date == tx_in.transaction_date,
+                ))
+                if existing.scalar_one_or_none() is not None:
+                    duplicates += 1
+                    continue
+                await create_transaction(db, user_id, tx_in)
+                imported += 1
+            except Exception:
+                failed += 1
+
+    return {
+        "imported": imported,
+        "duplicates": duplicates,
+        "failed": failed,
+        "message": f"Successfully imported {imported} demo transactions ({duplicates} duplicate(s) skipped).",
+    }
+
