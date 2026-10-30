@@ -1,0 +1,6 @@
+amount,transaction_type,category,merchant,description,transaction_date
+5500,income,Salary,Acme Corp,Monthly salary,2026-10-01
+850,expense,Housing,City Apartments,Rent contribution,2026-10-02
+74.50,expense,Groceries,Fresh Market,Weekly groceries,2026-10-04
+32.00,expense,Transport,Metro,Commute pass,2026-10-06
+18.99,expense,Entertainment,StreamBox,Subscription,2026-10-09

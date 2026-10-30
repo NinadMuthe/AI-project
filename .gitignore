@@ -1,0 +1,40 @@
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.sqlite3
+
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+
+# Node / Frontend
+node_modules/
+dist/
+build/
+.next/
+out/
+
+# Uploads and temporary data
+uploads/
+*.tmp
+
+# ML Model Checkpoints
+*.pt
+*.pth
+*.ckpt
+*.joblib
+*.onnx
+checkpoints/
+models_saved/
+
+# Editor / IDE
+.idea/
+.vscode/
+.DS_Store

@@ -1,0 +1,10 @@
+# Backend requirements
+fastapi
+uvicorn[standard]
+pydantic-settings
+sqlalchemy[asyncio]
+psycopg[binary]
+python-multipart
+alembic
+passlib[bcrypt]
+python-jose[cryptography]
