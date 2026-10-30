@@ -20,11 +20,11 @@ async def get_dashboard_summary(db: AsyncSession, user_id: int) -> DashboardSumm
     # Total income & expenses overall
     income_stmt = select(func.coalesce(func.sum(Transaction.amount), 0)).where(
         Transaction.user_id == user_id,
-        Transaction.transaction_type == TransactionType.INCOME,
+        Transaction.transaction_type == "income",
     )
     expense_stmt = select(func.coalesce(func.sum(Transaction.amount), 0)).where(
         Transaction.user_id == user_id,
-        Transaction.transaction_type == TransactionType.EXPENSE,
+        Transaction.transaction_type == "expense",
     )
     total_income = (await db.execute(income_stmt)).scalar_one()
     total_expenses = (await db.execute(expense_stmt)).scalar_one()
@@ -34,13 +34,13 @@ async def get_dashboard_summary(db: AsyncSession, user_id: int) -> DashboardSumm
     now = datetime.utcnow()
     month_income_stmt = select(func.coalesce(func.sum(Transaction.amount), 0)).where(
         Transaction.user_id == user_id,
-        Transaction.transaction_type == TransactionType.INCOME,
+        Transaction.transaction_type == "income",
         extract("year", Transaction.transaction_date) == now.year,
         extract("month", Transaction.transaction_date) == now.month,
     )
     month_expense_stmt = select(func.coalesce(func.sum(Transaction.amount), 0)).where(
         Transaction.user_id == user_id,
-        Transaction.transaction_type == TransactionType.EXPENSE,
+        Transaction.transaction_type == "expense",
         extract("year", Transaction.transaction_date) == now.year,
         extract("month", Transaction.transaction_date) == now.month,
     )
@@ -52,7 +52,7 @@ async def get_dashboard_summary(db: AsyncSession, user_id: int) -> DashboardSumm
     recent_stmt = (
         select(Transaction)
         .where(Transaction.user_id == user_id)
-        .order_by(desc(Transaction.transaction_date))
+        .order_by(desc(Transaction.transaction_date), desc(Transaction.id))
         .limit(5)
     )
     recent_rows = (await db.execute(recent_stmt)).scalars().all()
@@ -62,7 +62,7 @@ async def get_dashboard_summary(db: AsyncSession, user_id: int) -> DashboardSumm
             amount=float(row.amount),
             transaction_type=getattr(row.transaction_type, "value", str(row.transaction_type)),
             category=row.category,
-            transaction_date=row.transaction_date,
+            transaction_date=row.transaction_date.date() if isinstance(row.transaction_date, datetime) else row.transaction_date,
         )
         for row in recent_rows
     ]
@@ -72,7 +72,7 @@ async def get_dashboard_summary(db: AsyncSession, user_id: int) -> DashboardSumm
         select(Transaction.category, func.coalesce(func.sum(Transaction.amount), 0))
         .where(
             Transaction.user_id == user_id,
-            Transaction.transaction_type == TransactionType.EXPENSE,
+            Transaction.transaction_type == "expense",
         )
         .group_by(Transaction.category)
     )
@@ -90,7 +90,8 @@ async def get_dashboard_summary(db: AsyncSession, user_id: int) -> DashboardSumm
     for transaction_date, transaction_type, amount in trend_rows:
         key = transaction_date.strftime("%Y-%m")
         bucket = grouped.setdefault(key, {"income": 0.0, "expenses": 0.0})
-        if transaction_type == TransactionType.INCOME:
+        t_type = getattr(transaction_type, "value", str(transaction_type)).lower()
+        if t_type == "income":
             bucket["income"] += float(amount)
         else:
             bucket["expenses"] += float(amount)
