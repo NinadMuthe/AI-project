@@ -6,10 +6,12 @@ import {
   markAnomalyReviewed,
   AnomalyTransaction,
 } from "../services/anomaly";
+import { fetchModelsStatus, ModelDetail } from "../services/models";
 import { format } from "date-fns";
 
 const AnomaliesPage: React.FC = () => {
   const [anomalies, setAnomalies] = useState<AnomalyTransaction[]>([]);
+  const [modelStatus, setModelStatus] = useState<ModelDetail | null>(null);
   const [filterUnreviewedOnly, setFilterUnreviewedOnly] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [detecting, setDetecting] = useState<boolean>(false);
@@ -18,8 +20,14 @@ const AnomaliesPage: React.FC = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const data = await fetchAnomalies(!filterUnreviewedOnly);
+      const [data, statusRes] = await Promise.all([
+        fetchAnomalies(!filterUnreviewedOnly),
+        fetchModelsStatus().catch(() => null),
+      ]);
       setAnomalies(data);
+      if (statusRes?.isolation_forest) {
+        setModelStatus(statusRes.isolation_forest);
+      }
     } catch (e: any) {
       setBanner({
         text: e.response?.data?.detail || e.message || "Failed to load anomaly records",
@@ -83,11 +91,24 @@ const AnomaliesPage: React.FC = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-2xl font-bold text-slate-800">Unusual Spending Activity</h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
               Isolation Forest ML
             </span>
+            {modelStatus && (
+              <span
+                className={`px-2 py-0.5 rounded text-[11px] font-semibold border ${
+                  modelStatus.state === "ready"
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    : modelStatus.state === "training"
+                    ? "bg-blue-50 text-blue-700 border-blue-200"
+                    : "bg-slate-100 text-slate-600 border-slate-300"
+                }`}
+              >
+                Model: {modelStatus.state} ({modelStatus.records_used} records)
+              </span>
+            )}
           </div>
           <p className="text-sm text-slate-500 mt-1">
             Machine learning engine identifies suspicious spending amounts, velocity anomalies, and category outliers.
@@ -105,62 +126,66 @@ const AnomaliesPage: React.FC = () => {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
               </svg>
-              Scanning with Isolation Forest...
+              Running Isolation Forest...
             </>
           ) : (
-            "Run Anomaly Detection"
+            "Run Anomaly Check Now"
           )}
         </button>
       </div>
 
-      {/* Status Banner */}
+      {/* Banner */}
       {banner && (
         <div
-          className={`px-4 py-3 rounded-md text-sm flex items-center justify-between border ${
+          className={`p-4 rounded-md text-sm flex items-center justify-between ${
             banner.type === "success"
-              ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-              : "bg-rose-50 border-rose-200 text-rose-800"
+              ? "bg-emerald-50 border border-emerald-200 text-emerald-800"
+              : "bg-rose-50 border border-rose-200 text-rose-800"
           }`}
         >
           <span>{banner.text}</span>
-          <button onClick={() => setBanner(null)} className="ml-4 font-bold text-lg leading-none">
+          <button onClick={() => setBanner(null)} className="font-bold text-lg leading-none ml-4">
             &times;
           </button>
         </div>
       )}
 
-      {/* Summary KPI Cards */}
+      {/* Statistics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
           <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Flagged</span>
-          <div className="mt-1 text-2xl font-bold text-slate-900">{totalFlagged}</div>
-          <span className="text-xs text-slate-400">Unusual patterns identified</span>
+          <div className="mt-1 text-2xl font-bold text-slate-800">{totalFlagged}</div>
+          <span className="text-xs text-slate-400">Total unusual entries detected</span>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
           <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">Pending Review</span>
           <div className="mt-1 text-2xl font-bold text-amber-600">{pendingReview}</div>
-          <span className="text-xs text-slate-400">Awaiting user confirmation</span>
+          <span className="text-xs text-slate-400">Transactions requiring attention</span>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
           <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">Reviewed</span>
           <div className="mt-1 text-2xl font-bold text-emerald-600">{clearedCount}</div>
-          <span className="text-xs text-slate-400">Marked as acknowledged</span>
+          <span className="text-xs text-slate-400">Confirmed by account holder</span>
         </div>
       </div>
 
-      {/* Filter and Table Container */}
+      {/* Table Section */}
       <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-          <h2 className="text-base font-semibold text-slate-800">Detected Unusual Spending</h2>
-          <div className="flex items-center gap-3">
-            <label className="inline-flex items-center text-sm text-slate-600 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={filterUnreviewedOnly}
-                onChange={(e) => setFilterUnreviewedOnly(e.target.checked)}
-                className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4"
-              />
-              <span className="ml-2">Show Pending Review Only</span>
+          <h2 className="text-base font-semibold text-slate-800">
+            Detected Outliers ({displayedAnomalies.length})
+          </h2>
+
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="unreviewed-only"
+              checked={filterUnreviewedOnly}
+              onChange={(e) => setFilterUnreviewedOnly(e.target.checked)}
+              className="h-4 w-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+            />
+            <label htmlFor="unreviewed-only" className="text-xs font-medium text-slate-600 cursor-pointer">
+              Show unreviewed only
             </label>
           </div>
         </div>
@@ -168,7 +193,7 @@ const AnomaliesPage: React.FC = () => {
         {loading ? (
           <div className="py-12 flex justify-center items-center text-slate-500">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mr-3"></div>
-            Loading unusual activity records...
+            Loading anomaly records...
           </div>
         ) : displayedAnomalies.length > 0 ? (
           <div className="overflow-x-auto">
@@ -176,59 +201,61 @@ const AnomaliesPage: React.FC = () => {
               <thead className="bg-slate-50 text-slate-500 uppercase text-xs border-b border-slate-200">
                 <tr>
                   <th className="py-2.5 px-4 font-semibold">Date</th>
-                  <th className="py-2.5 px-4 font-semibold">Merchant & Category</th>
-                  <th className="py-2.5 px-4 font-semibold">Amount</th>
-                  <th className="py-2.5 px-4 font-semibold">Anomaly Reason</th>
-                  <th className="py-2.5 px-4 font-semibold">Score</th>
-                  <th className="py-2.5 px-4 font-semibold">Status</th>
+                  <th className="py-2.5 px-4 font-semibold">Merchant & Details</th>
+                  <th className="py-2.5 px-4 font-semibold">Category</th>
+                  <th className="py-2.5 px-4 font-semibold text-right">Amount</th>
+                  <th className="py-2.5 px-4 font-semibold">Model Finding</th>
+                  <th className="py-2.5 px-4 font-semibold text-center">Score</th>
+                  <th className="py-2.5 px-4 font-semibold text-center">Status</th>
                   <th className="py-2.5 px-4 font-semibold text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {displayedAnomalies.map((anom) => (
-                  <tr key={anom.id} className="hover:bg-slate-50">
+                {displayedAnomalies.map((tx) => (
+                  <tr key={tx.id} className="hover:bg-slate-50">
                     <td className="py-3 px-4 text-slate-600 whitespace-nowrap">
-                      {format(new Date(anom.transaction_date), "MMM d, yyyy")}
+                      {format(new Date(tx.transaction_date), "MMM d, yyyy")}
                     </td>
-                    <td className="py-3 px-4">
-                      <div className="font-medium text-slate-800">{anom.merchant || "Unknown Merchant"}</div>
-                      <div className="text-xs text-slate-500">{anom.category}</div>
+                    <td className="py-3 px-4 max-w-xs">
+                      <div className="font-semibold text-slate-800">{tx.merchant || "-"}</div>
+                      {tx.description && (
+                        <div className="text-xs text-slate-400 truncate">{tx.description}</div>
+                      )}
                     </td>
-                    <td className="py-3 px-4 font-bold text-slate-900 whitespace-nowrap">
-                      ${anom.amount.toFixed(2)}
+                    <td className="py-3 px-4 text-slate-700 whitespace-nowrap">{tx.category}</td>
+                    <td className="py-3 px-4 text-right font-bold text-rose-600 whitespace-nowrap">
+                      ${tx.amount.toFixed(2)}
                     </td>
-                    <td className="py-3 px-4 text-slate-700 max-w-xs">
-                      <span className="text-xs font-medium text-amber-900 bg-amber-50 px-2 py-1 rounded inline-block">
-                        {anom.anomaly_reason || "Unusual spending pattern"}
+                    <td className="py-3 px-4 text-xs text-slate-700 max-w-sm">
+                      <span className="font-medium text-amber-900 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                        {tx.anomaly_reason || "Unusual pattern flagged by model"}
                       </span>
                     </td>
-                    <td className="py-3 px-4 whitespace-nowrap">
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
-                        {anom.anomaly_score !== null && anom.anomaly_score !== undefined
-                          ? (anom.anomaly_score * 100).toFixed(0) + "%"
+                    <td className="py-3 px-4 text-center whitespace-nowrap">
+                      <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
+                        {tx.anomaly_score !== null && tx.anomaly_score !== undefined
+                          ? (tx.anomaly_score * 100).toFixed(0) + "%"
                           : "-"}
                       </span>
                     </td>
-                    <td className="py-3 px-4 whitespace-nowrap">
-                      {anom.is_reviewed ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700">
+                    <td className="py-3 px-4 text-center whitespace-nowrap">
+                      {tx.is_reviewed ? (
+                        <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-medium">
                           Reviewed
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                        <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-medium">
                           Pending
                         </span>
                       )}
                     </td>
                     <td className="py-3 px-4 text-right whitespace-nowrap">
-                      {anom.is_reviewed ? (
-                        <span className="text-xs text-slate-400">Acknowledged</span>
-                      ) : (
+                      {!tx.is_reviewed && (
                         <button
-                          onClick={() => handleMarkReviewed(anom.id)}
-                          className="px-3 py-1 bg-white border border-indigo-600 text-indigo-600 hover:bg-indigo-50 text-xs font-medium rounded shadow-sm focus:outline-none"
+                          onClick={() => handleMarkReviewed(tx.id)}
+                          className="text-xs px-2.5 py-1 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium rounded shadow-xs"
                         >
-                          Mark as Reviewed
+                          Mark Reviewed
                         </button>
                       )}
                     </td>
@@ -238,11 +265,9 @@ const AnomaliesPage: React.FC = () => {
             </table>
           </div>
         ) : (
-          <div className="py-12 text-center text-slate-500 text-sm">
-            <p className="font-medium">No unusual transactions currently flagged.</p>
-            <p className="text-xs text-slate-400 mt-1">
-              Click "Run Anomaly Detection" to scan all transactions with the Isolation Forest model.
-            </p>
+          <div className="py-12 text-center text-slate-400 text-sm">
+            <p>No unusual transactions found matching criteria.</p>
+            <p className="text-xs mt-1">Run an anomaly check or import transactions to analyze.</p>
           </div>
         )}
       </div>

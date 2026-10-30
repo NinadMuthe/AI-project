@@ -21,18 +21,7 @@ export const deleteTransaction = async (id: number) => {
   await api.delete(`/transactions/${id}`);
 };
 
-export const importCsv = async (file: File) => {
-  const form = new FormData();
-  form.append("file", file);
-  const resp = await api.post("/transactions/import", form, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
-  return resp.data;
-};
-
-export const importDemoData = async () => {
-  const resp = await api.post<{ imported: number; duplicates: number; failed: number; message: string }>(
-    "/transactions/import-demo"
-  );
+export const loadSampleData = async () => {
+  const resp = await api.post<{ inserted: number; message: string }>("/transactions/load-sample");
   return resp.data;
 };

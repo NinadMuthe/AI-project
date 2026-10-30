@@ -1,6 +1,6 @@
 # backend/app/api/routes/transaction.py
 from datetime import date
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
 from typing import List
 
 from ..dependencies import get_db
@@ -16,21 +16,26 @@ from ...services.transaction_service import (
     update_transaction,
     delete_transaction,
 )
-from ...core.security import decode_access_token
-
+from ...ml.anomaly_detector import run_anomaly_detection
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..security import get_current_user_id
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
 
+
 @router.post("/", response_model=TransactionRead, status_code=status.HTTP_201_CREATED)
 @router.post("", response_model=TransactionRead, status_code=status.HTTP_201_CREATED, include_in_schema=False)
 async def create_tx(
     tx_in: TransactionCreate,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     user_id: int = Depends(get_current_user_id),
 ):
-    return await create_transaction(db, user_id, tx_in)
+    tx = await create_transaction(db, user_id, tx_in)
+    # Background anomaly detection trigger
+    background_tasks.add_task(run_anomaly_detection, db, user_id)
+    return tx
+
 
 @router.get("/", response_model=List[TransactionRead])
 @router.get("", response_model=List[TransactionRead], include_in_schema=False)
@@ -47,6 +52,7 @@ async def list_txs(
 ):
     return await get_transactions(db, user_id, skip, limit, search, category, transaction_type, date_from, date_to)
 
+
 @router.get("/{tx_id}", response_model=TransactionRead)
 async def read_tx(
     tx_id: int,
@@ -58,17 +64,21 @@ async def read_tx(
         raise HTTPException(status_code=404, detail="Transaction not found")
     return tx
 
+
 @router.put("/{tx_id}", response_model=TransactionRead)
 async def update_tx(
     tx_id: int,
     tx_in: TransactionUpdate,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     user_id: int = Depends(get_current_user_id),
 ):
     tx = await update_transaction(db, user_id, tx_id, tx_in)
     if not tx:
         raise HTTPException(status_code=404, detail="Transaction not found")
+    background_tasks.add_task(run_anomaly_detection, db, user_id)
     return tx
+
 
 @router.delete("/{tx_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_tx(

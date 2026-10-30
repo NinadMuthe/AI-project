@@ -1,6 +1,7 @@
 // frontend/src/pages/ForecastPage.tsx
 import React, { useEffect, useState } from "react";
 import { fetchForecast, ForecastResponse } from "../services/forecast";
+import { fetchModelsStatus, ModelDetail } from "../services/models";
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -15,6 +16,7 @@ import { format } from "date-fns";
 
 const ForecastPage: React.FC = () => {
   const [data, setData] = useState<ForecastResponse | null>(null);
+  const [modelStatus, setModelStatus] = useState<ModelDetail | null>(null);
   const [horizon, setHorizon] = useState<number>(30);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -23,8 +25,14 @@ const ForecastPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetchForecast(h);
+      const [res, statusRes] = await Promise.all([
+        fetchForecast(h),
+        fetchModelsStatus().catch(() => null),
+      ]);
       setData(res);
+      if (statusRes?.lstm) {
+        setModelStatus(statusRes.lstm);
+      }
     } catch (e: any) {
       setError(e.response?.data?.detail || e.message || "Failed to load forecast");
     } finally {
@@ -67,7 +75,7 @@ const ForecastPage: React.FC = () => {
       {/* Header and Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-2xl font-bold text-slate-800">Cash Flow & Expense Forecast</h1>
             {data.is_baseline ? (
               <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300">
@@ -76,6 +84,19 @@ const ForecastPage: React.FC = () => {
             ) : (
               <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800 border border-indigo-300">
                 PyTorch LSTM Neural Network
+              </span>
+            )}
+            {modelStatus && (
+              <span
+                className={`px-2 py-0.5 rounded text-[11px] font-semibold border ${
+                  modelStatus.state === "ready"
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    : modelStatus.state === "training"
+                    ? "bg-blue-50 text-blue-700 border-blue-200"
+                    : "bg-slate-100 text-slate-600 border-slate-300"
+                }`}
+              >
+                Model: {modelStatus.state} ({modelStatus.records_used} records)
               </span>
             )}
           </div>
@@ -101,8 +122,8 @@ const ForecastPage: React.FC = () => {
       {/* Model explanation banner */}
       {data.is_baseline && (
         <div className="bg-amber-50 border border-amber-200 text-amber-900 px-4 py-3 rounded-lg text-sm">
-          <strong>Notice:</strong> This account does not yet have 30+ days of expense history. A 7-day moving average
-          baseline forecast is displayed instead of simulated neural model output.
+          <strong>Notice:</strong> This account does not yet have 60+ days of expense history. A 7-day moving average
+          baseline forecast is displayed instead of neural model output.
         </div>
       )}
 

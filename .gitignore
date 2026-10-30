@@ -23,6 +23,7 @@ out/
 
 # Uploads and temporary data
 uploads/
+backend/uploads/
 *.tmp
 
 # ML Model Checkpoints
@@ -33,6 +34,8 @@ uploads/
 *.onnx
 checkpoints/
 models_saved/
+model_checkpoints/
+backend/model_checkpoints/
 
 # Editor / IDE
 .idea/

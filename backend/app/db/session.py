@@ -33,8 +33,22 @@ async def init_db():
             "anomaly_reason VARCHAR",
             "anomaly_detected_at TIMESTAMP",
             "is_reviewed BOOLEAN NOT NULL DEFAULT FALSE",
+            "plaid_transaction_id VARCHAR",
+            "pending BOOLEAN NOT NULL DEFAULT FALSE",
         ]:
-            await conn.execute(text(f"ALTER TABLE transactions ADD COLUMN IF NOT EXISTS {col_def}"))
+            col_name = col_def.split()[0]
+            await conn.execute(text(
+                f"ALTER TABLE transactions ADD COLUMN IF NOT EXISTS {col_def}"
+            ))
+        # Unique constraint for plaid_transaction_id (ignore if already exists)
+        try:
+            await conn.execute(text(
+                "ALTER TABLE transactions ADD CONSTRAINT uq_plaid_transaction_id "
+                "UNIQUE (plaid_transaction_id)"
+            ))
+        except Exception:
+            pass
+        # Drop NOT NULL on merchant/description (safe to retry)
         try:
             await conn.execute(text("ALTER TABLE transactions ALTER COLUMN merchant DROP NOT NULL"))
             await conn.execute(text("ALTER TABLE transactions ALTER COLUMN description DROP NOT NULL"))

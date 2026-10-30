@@ -3,8 +3,11 @@ import React from "react";
 import { Routes, Route, NavLink, Navigate, Outlet, useNavigate } from "react-router-dom";
 import DashboardPage from "./pages/DashboardPage";
 import TransactionsPage from "./pages/TransactionsPage";
+import ReceiptScannerPage from "./pages/ReceiptScannerPage";
 import ForecastPage from "./pages/ForecastPage";
 import AnomaliesPage from "./pages/AnomaliesPage";
+import AIAssistantPage from "./pages/AIAssistantPage";
+import BankConnectionPage from "./pages/BankConnectionPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import PlannedPage from "./pages/PlannedPage";
@@ -25,16 +28,15 @@ const ProtectedLayout: React.FC = () => {
   const coreLinks = [
     { to: "/dashboard", label: "Dashboard", icon: "📊" },
     { to: "/transactions", label: "Transactions", icon: "💳" },
+    { to: "/receipt-scanner", label: "Receipt Scanner", icon: "🧾" },
     { to: "/forecast", label: "Forecast", icon: "📈" },
     { to: "/anomalies", label: "Anomalies", icon: "🛡️" },
+    { to: "/ai-assistant", label: "AI Assistant", icon: "✨" },
+    { to: "/bank-connection", label: "Bank Connection", icon: "🏦" },
   ];
 
   const plannedLinks = [
-    { to: "/ocr", label: "Receipt OCR", icon: "🧾" },
-    { to: "/sms", label: "SMS Extraction", icon: "💬" },
-    { to: "/ai-assistant", label: "AI Assistant", icon: "✨" },
     { to: "/budgets", label: "Budgets", icon: "🎯" },
-    { to: "/plaid", label: "Plaid Sync", icon: "🏦" },
     { to: "/settings", label: "Settings", icon: "⚙️" },
   ];
 
@@ -61,7 +63,7 @@ const ProtectedLayout: React.FC = () => {
         <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
           <div>
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 px-3">
-              Core Modules
+              Active Modules
             </span>
             <nav className="mt-2 space-y-1">
               {coreLinks.map(({ to, label, icon }) => (
@@ -163,40 +165,13 @@ const App: React.FC = () => {
         {/* Core Live Pages */}
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/transactions" element={<TransactionsPage />} />
+        <Route path="/receipt-scanner" element={<ReceiptScannerPage />} />
         <Route path="/forecast" element={<ForecastPage />} />
         <Route path="/anomalies" element={<AnomaliesPage />} />
+        <Route path="/ai-assistant" element={<AIAssistantPage />} />
+        <Route path="/bank-connection" element={<BankConnectionPage />} />
 
         {/* Planned Next Phase Pages */}
-        <Route
-          path="/ocr"
-          element={
-            <PlannedPage
-              featureName="Receipt OCR"
-              description="Automated optical character recognition scanning of receipt photos and invoices with automatic merchant, total, and line item parsing."
-              icon="🧾"
-            />
-          }
-        />
-        <Route
-          path="/sms"
-          element={
-            <PlannedPage
-              featureName="SMS Text Extraction"
-              description="Bank and card SMS notification parsing with regular expression heuristics to automatically extract and ledger debits and credits."
-              icon="💬"
-            />
-          }
-        />
-        <Route
-          path="/ai-assistant"
-          element={
-            <PlannedPage
-              featureName="AI Financial Assistant"
-              description="Conversational agent with tool calling to query spending habits, provide budget advice, and draft financial summaries."
-              icon="✨"
-            />
-          }
-        />
         <Route
           path="/budgets"
           element={
@@ -204,16 +179,6 @@ const App: React.FC = () => {
               featureName="Budgets"
               description="Configurable monthly category spending limits with progress indicators and threshold alert webhooks."
               icon="🎯"
-            />
-          }
-        />
-        <Route
-          path="/plaid"
-          element={
-            <PlannedPage
-              featureName="Plaid Integration"
-              description="Direct bank synchronization via Plaid Link to ingest account balances and daily real-time transaction streams."
-              icon="🏦"
             />
           }
         />

@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import SummaryCard from "../components/SummaryCard";
 import { fetchDashboardSummary } from "../services/dashboard";
-import { importDemoData } from "../services/transaction";
+import { loadSampleData } from "../services/transaction";
 import { DashboardSummary } from "../types/dashboard";
 import {
   PieChart,
@@ -25,37 +25,44 @@ const DashboardPage: React.FC = () => {
   const [data, setData] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [importingDemo, setImportingDemo] = useState(false);
-  const [demoBanner, setDemoBanner] = useState<string | null>(null);
+  const [loadingSample, setLoadingSample] = useState(false);
+  const [banner, setBanner] = useState<string | null>(null);
 
-  const loadData = async () => {
+  const loadData = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       setError(null);
       const summary = await fetchDashboardSummary();
       setData(summary);
     } catch (e: any) {
-      setError(e.response?.data?.detail || e.message || "Failed to load dashboard");
+      if (!silent) {
+        setError(e.response?.data?.detail || e.message || "Failed to load dashboard");
+      }
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
   useEffect(() => {
     loadData();
+    // Auto-refresh dashboard data every 30 seconds for live bank sync updates
+    const timer = setInterval(() => {
+      loadData(true);
+    }, 30000);
+    return () => clearInterval(timer);
   }, []);
 
-  const handleImportDemo = async () => {
+  const handleLoadSample = async () => {
     try {
-      setImportingDemo(true);
-      setDemoBanner(null);
-      const res = await importDemoData();
-      setDemoBanner(res.message);
+      setLoadingSample(true);
+      setBanner(null);
+      const res = await loadSampleData();
+      setBanner(res.message);
       await loadData();
     } catch (e: any) {
-      setDemoBanner(e.response?.data?.detail || "Failed to import demo data");
+      setBanner(e.response?.data?.detail || "Failed to load sample data.");
     } finally {
-      setImportingDemo(false);
+      setLoadingSample(false);
     }
   };
 
@@ -74,7 +81,7 @@ const DashboardPage: React.FC = () => {
         <p className="font-semibold">Unable to load dashboard</p>
         <p className="text-sm">{error}</p>
         <button
-          onClick={loadData}
+          onClick={() => loadData()}
           className="mt-3 px-3 py-1 bg-rose-600 text-white rounded text-sm hover:bg-rose-700"
         >
           Retry
@@ -98,7 +105,7 @@ const DashboardPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Top Header & Demo Import Action */}
+      {/* Top Header & Sample Data Action */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Financial Overview</h1>
@@ -106,31 +113,31 @@ const DashboardPage: React.FC = () => {
         </div>
         <div className="flex items-center gap-3">
           <button
-            onClick={handleImportDemo}
-            disabled={importingDemo}
+            onClick={handleLoadSample}
+            disabled={loadingSample}
             className="inline-flex items-center px-4 py-2 border border-indigo-600 text-sm font-medium rounded-md shadow-sm text-indigo-600 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
           >
-            {importingDemo ? (
+            {loadingSample ? (
               <>
                 <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-indigo-600" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                 </svg>
-                Importing...
+                Generating 6 Months Data...
               </>
             ) : (
-              "Import Demo Data"
+              "Load Sample Data"
             )}
           </button>
         </div>
       </div>
 
-      {/* Demo Notification Banner */}
-      {demoBanner && (
+      {/* Notification Banner */}
+      {banner && (
         <div className="bg-indigo-50 border border-indigo-200 text-indigo-800 px-4 py-3 rounded-md flex items-center justify-between">
-          <span className="text-sm">{demoBanner}</span>
+          <span className="text-sm">{banner}</span>
           <button
-            onClick={() => setDemoBanner(null)}
+            onClick={() => setBanner(null)}
             className="text-indigo-500 hover:text-indigo-800 text-sm font-semibold ml-4"
           >
             &times;
@@ -185,7 +192,7 @@ const DashboardPage: React.FC = () => {
             </ResponsiveContainer>
           ) : (
             <div className="h-64 flex items-center justify-center text-slate-400 text-sm">
-              No cash flow data available yet. Import demo data to view.
+              No cash flow data available yet. Click "Load Sample Data" to populate.
             </div>
           )}
         </section>
@@ -231,7 +238,7 @@ const DashboardPage: React.FC = () => {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-base font-semibold text-slate-800">Recent Transactions</h2>
-            <p className="text-xs text-slate-500">Last 5 recorded financial entries</p>
+            <p className="text-xs text-slate-500">Last 5 recorded financial entries across all channels</p>
           </div>
         </div>
         {data.recent_transactions.length > 0 ? (
@@ -277,7 +284,7 @@ const DashboardPage: React.FC = () => {
           </div>
         ) : (
           <div className="py-8 text-center text-slate-400 text-sm">
-            No transactions found. Click "Import Demo Data" to load transactions.
+            No transactions found. Click "Load Sample Data" to initialize.
           </div>
         )}
       </section>

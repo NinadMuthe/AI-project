@@ -24,5 +24,11 @@ export interface TransactionUpdate {
 export interface TransactionRead extends TransactionBase {
   id: number;
   user_id: number;
+  plaid_transaction_id?: string | null;
+  pending?: boolean;
+  is_anomaly?: boolean;
+  anomaly_score?: number | null;
+  anomaly_reason?: string | null;
+  anomaly_detected_at?: string | null;
+  is_reviewed?: boolean;
 }
-

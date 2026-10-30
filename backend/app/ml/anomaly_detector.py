@@ -9,6 +9,7 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.transaction import Transaction
+from ..services.model_registry import update_model_status
 
 
 async def run_anomaly_detection(db: AsyncSession, user_id: int) -> Tuple[int, int, List[Transaction]]:
@@ -18,7 +19,9 @@ async def run_anomaly_detection(db: AsyncSession, user_id: int) -> Tuple[int, in
     2. Category-relative expenditure
     3. Spending-frequency features (same-day frequency and inter-transaction interval)
 
-    Strict rule: Never use the word 'fraud'; only 'suspicious' or 'unusual'.
+    Strict rules:
+    - Never use the word 'fraud'; only 'suspicious' or 'unusual'.
+    - Fits automatically when a user has at least 30 transactions.
     """
     # 1. Fetch user expense transactions
     stmt = (
@@ -33,13 +36,21 @@ async def run_anomaly_detection(db: AsyncSession, user_id: int) -> Tuple[int, in
     tx_list: List[Transaction] = list(result.scalars().all())
 
     if not tx_list:
+        update_model_status(user_id, "isolation_forest", "not_enough_data", records_used=0, message="0/30 transactions")
         return 0, 0, []
 
     total_evaluated = len(tx_list)
 
-    # If very few records (less than 6), Isolation Forest cannot reliably partition
-    if total_evaluated < 6:
-        # Fallback to simple category-based statistical threshold
+    # STEP 3 rule: fit Isolation Forest when user has at least 30 transactions
+    if total_evaluated < 30:
+        update_model_status(
+            user_id,
+            "isolation_forest",
+            "not_enough_data",
+            records_used=total_evaluated,
+            message=f"{total_evaluated}/30 transactions needed for Isolation Forest",
+        )
+        # Simple statistical fallback for few records
         flagged = []
         amounts = [float(t.amount) for t in tx_list]
         avg_amt = float(np.mean(amounts))
@@ -57,7 +68,9 @@ async def run_anomaly_detection(db: AsyncSession, user_id: int) -> Tuple[int, in
             await db.commit()
         return total_evaluated, len(flagged), flagged
 
-    # 2. Build feature matrix
+    # Full Isolation Forest on >= 30 transactions
+    update_model_status(user_id, "isolation_forest", "training", records_used=total_evaluated)
+
     data = []
     for tx in tx_list:
         tx_d = tx.transaction_date.date() if isinstance(tx.transaction_date, datetime) else tx.transaction_date
@@ -86,7 +99,7 @@ async def run_anomaly_detection(db: AsyncSession, user_id: int) -> Tuple[int, in
     # Feature 4: Days since last transaction
     df["days_diff"] = df["date"].diff().dt.days.fillna(0).clip(lower=0)
 
-    # Prepare numerical feature matrix
+    # Numerical feature matrix
     feature_cols = ["log_amount", "cat_zscore", "same_day_freq", "days_diff"]
     X = df[feature_cols].values
 
@@ -102,7 +115,6 @@ async def run_anomaly_detection(db: AsyncSession, user_id: int) -> Tuple[int, in
         random_state=42,
     )
     predictions = iso_forest.fit_predict(X_scaled)
-    # Lower decision scores correspond to more anomalous instances
     decision_scores = iso_forest.decision_function(X_scaled)
 
     # Convert decision function into normalized anomaly score (0 to 1, higher = more unusual)
@@ -141,5 +153,13 @@ async def run_anomaly_detection(db: AsyncSession, user_id: int) -> Tuple[int, in
     await db.commit()
     for tx in flagged_txs:
         await db.refresh(tx)
+
+    update_model_status(
+        user_id,
+        "isolation_forest",
+        "ready",
+        records_used=total_evaluated,
+        message=f"Isolation Forest active ({len(flagged_txs)} unusual transaction(s) flagged)",
+    )
 
     return total_evaluated, len(flagged_txs), flagged_txs

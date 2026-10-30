@@ -10,6 +10,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.transaction import Transaction
 from ..schemas.forecast import DailyPoint, ForecastResponse
+from ..services.model_registry import (
+    get_checkpoint_path,
+    update_model_status,
+    should_retrain,
+)
 
 
 class LSTMModel(nn.Module):
@@ -80,6 +85,7 @@ async def generate_expense_forecast(
 
     # If no data at all
     if not daily_map:
+        update_model_status(user_id, "lstm", "not_enough_data", records_used=0, message="No expense transactions recorded.")
         return ForecastResponse(
             model_used="BASELINE (Insufficient Data)",
             is_baseline=True,
@@ -107,12 +113,12 @@ async def generate_expense_forecast(
         curr += timedelta(days=1)
 
     expense_arr = np.array(all_expenses, dtype=np.float32)
-    MIN_DAYS_FOR_LSTM = 30
+    # STEP 3 requirement: Requires at least 60 days of expense history
+    MIN_DAYS_FOR_LSTM = 60
     seq_len = 7
 
-    # Check sufficiency: need at least 30 continuous calendar days and at least 15 non-zero expense days
     non_zero_days = sum(1 for v in all_expenses if v > 0)
-    has_sufficient_data = total_span_days >= MIN_DAYS_FOR_LSTM and non_zero_days >= 15
+    has_sufficient_data = total_span_days >= MIN_DAYS_FOR_LSTM and non_zero_days >= 20
 
     predictions: List[float] = []
     is_baseline = False
@@ -125,19 +131,25 @@ async def generate_expense_forecast(
         model_name = "BASELINE (7-Day Moving Average)"
         status_message = (
             f"Insufficient history to train neural LSTM model ({total_span_days} days available, "
-            f"requires >= {MIN_DAYS_FOR_LSTM} days with active expenses). "
+            f"requires >= {MIN_DAYS_FOR_LSTM} days of history). "
             "Displaying moving-average baseline projection."
+        )
+        update_model_status(
+            user_id,
+            "lstm",
+            "not_enough_data",
+            records_used=total_span_days,
+            message=f"{total_span_days}/{MIN_DAYS_FOR_LSTM} days needed for PyTorch LSTM",
         )
         recent_window = all_expenses[-14:] if len(all_expenses) >= 14 else all_expenses
         avg_daily = float(np.mean(recent_window)) if recent_window else 50.0
 
         for i in range(horizon_days):
             pred_date = max_date + timedelta(days=i + 1)
-            # Slight weekend variation (Friday/Saturday higher)
             multiplier = 1.2 if pred_date.weekday() in [4, 5] else 0.95
             predictions.append(round(max(0.0, avg_daily * multiplier), 2))
     else:
-        # REAL PYTORCH LSTM TRAINING
+        # REAL PYTORCH LSTM TRAINING & CHECKPOINT MANAGEMENT
         is_baseline = False
         model_name = "PyTorch LSTM (Trained on User Expense History)"
         status_message = (
@@ -147,21 +159,46 @@ async def generate_expense_forecast(
 
         max_val = float(np.max(expense_arr)) if np.max(expense_arr) > 0 else 1.0
         norm_data = expense_arr / max_val
+        checkpoint_path = get_checkpoint_path(user_id)
 
-        X, y = create_sequences(norm_data, seq_len=seq_len)
         model = LSTMModel(input_size=1, hidden_size=32, num_layers=1)
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-        criterion = nn.MSELoss()
+        need_train = should_retrain(user_id, "lstm", len(all_expenses)) or not checkpoint_path.exists()
 
-        model.train()
-        for epoch in range(40):
-            optimizer.zero_grad()
-            out = model(X)
-            loss = criterion(out, y)
-            loss.backward()
-            optimizer.step()
+        if need_train:
+            update_model_status(user_id, "lstm", "training", records_used=len(all_expenses))
+            X, y = create_sequences(norm_data, seq_len=seq_len)
+            optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+            criterion = nn.MSELoss()
 
-        # Multi-step autoregressive forecasting
+            model.train()
+            for epoch in range(40):
+                optimizer.zero_grad()
+                out = model(X)
+                loss = criterion(out, y)
+                loss.backward()
+                optimizer.step()
+
+            # Save checkpoint
+            torch.save({
+                "model_state_dict": model.state_dict(),
+                "max_val": max_val,
+                "records_used": len(all_expenses),
+            }, checkpoint_path)
+
+            update_model_status(
+                user_id,
+                "lstm",
+                "ready",
+                records_used=len(all_expenses),
+                message=f"Trained on {len(all_expenses)} daily records",
+            )
+        else:
+            # Load existing checkpoint
+            ckpt = torch.load(checkpoint_path, map_location="cpu")
+            model.load_state_dict(ckpt["model_state_dict"])
+            max_val = ckpt.get("max_val", max_val)
+
+        # Autoregressive multi-step inference
         model.eval()
         current_seq = norm_data[-seq_len:].tolist()
 
@@ -169,7 +206,6 @@ async def generate_expense_forecast(
             for i in range(horizon_days):
                 inp = torch.tensor(current_seq[-seq_len:], dtype=torch.float32).view(1, seq_len, 1)
                 pred_norm = model(inp).item()
-                # Constrain within reasonable non-negative bounds
                 pred_val = max(0.0, float(pred_norm * max_val))
                 predictions.append(round(pred_val, 2))
                 current_seq.append(pred_norm)

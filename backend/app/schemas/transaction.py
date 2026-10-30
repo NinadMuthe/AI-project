@@ -37,6 +37,8 @@ class TransactionUpdate(BaseModel):
 class TransactionRead(TransactionBase):
     id: int
     user_id: int
+    plaid_transaction_id: Optional[str] = None
+    pending: Optional[bool] = False
     is_anomaly: Optional[bool] = False
     anomaly_score: Optional[float] = None
     anomaly_reason: Optional[str] = None

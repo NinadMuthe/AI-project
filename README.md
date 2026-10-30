@@ -1,23 +1,26 @@
-# FinPulse AI - Web Application Demo
+# FinPulse AI - Production Web Application
 
-FinPulse AI is a financial intelligence and forecasting web application built with a FastAPI backend, PostgreSQL database, PyTorch LSTM time-series forecasting, Scikit-learn Isolation Forest anomaly detection, and a React + Vite + Tailwind + Recharts frontend.
+FinPulse AI is a real-life personal financial intelligence engine built with a FastAPI backend, PostgreSQL database, PyTorch LSTM time-series forecaster, Scikit-learn Isolation Forest anomaly detector, EasyOCR receipt scanner, Google Gemini + LangChain financial advisor, and a React + Vite + TypeScript + Tailwind + Recharts frontend.
 
 ---
 
 ## Architecture & Stack
 
 - **Backend**: Python 3.12, FastAPI, SQLAlchemy 2.x (async), Psycopg 3, Pydantic Settings, Uvicorn
-- **Database**: PostgreSQL (`finpulse` database, automatic schema initialization via SQLAlchemy `create_all`)
+- **Database**: PostgreSQL (`finpulse` database, automatic schema migrations via SQLAlchemy `create_all`)
+- **Plaid Integration**: Official `plaid-python` SDK, Sandbox banking environment (`ins_109508`), background auto-synchronization every 2 minutes
 - **Machine Learning**:
-  - **PyTorch LSTM**: Autoregressive neural time-series forecasting on daily expense history
-  - **Scikit-learn Isolation Forest**: Multivariate anomaly detection flagging unusual expenditures and spending velocity
+  - **PyTorch LSTM**: Autoregressive neural time-series forecaster trained automatically when expense history spans >= 60 days, with checkpoint persistence in `backend/model_checkpoints/`
+  - **Scikit-learn Isolation Forest**: Multivariate anomaly detection flagging unusual expenditures and velocity spikes when ledger has >= 30 transactions
+- **Receipt OCR**: EasyOCR (CPU mode) with intelligent total/merchant/date parsing and interactive pre-fill
+- **AI Financial Advisor**: Google Gemini via LangChain (`langchain-google-genai`), contextualized directly with verified ledger balances, top categories, and pending unusual transactions
 - **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, Recharts, Axios, React Router v6
 
 ---
 
 ## Environment Configuration
 
-A root `.env` file is required. The application strictly reads configuration through Pydantic Settings and validates all required variables at startup.
+A root `.env` file is required. The application reads configuration exclusively through Pydantic Settings and validates all required variables on startup.
 
 ### Environment Variable Names:
 - `APP_ENV`
@@ -28,13 +31,14 @@ A root `.env` file is required. The application strictly reads configuration thr
 - `JWT_ALGORITHM`
 - `ACCESS_TOKEN_EXPIRE_MINUTES`
 - `GOOGLE_API_KEY`
+- `GEMINI_MODEL` (optional, default: `gemini-1.5-flash`)
 - `PLAID_CLIENT_ID`
 - `PLAID_SECRET`
 - `PLAID_ENV`
 - `LOG_LEVEL`
 - `OPENAI_API_KEY` (optional)
 
-> Refer to `.env.example` for placeholder templates. Never commit `.env` or expose real secrets.
+> Refer to `.env.example` for placeholder templates. Never commit `.env` or print/expose real secrets.
 
 ---
 
@@ -46,8 +50,10 @@ Open PowerShell in the project root:
 .\.venv\Scripts\Activate.ps1
 uvicorn app.main:app --reload --app-dir backend
 ```
+*(On Windows with Python 3.12 / Psycopg 3 async, you can also run: `python run_server.py`)*
+
 - API Base URL: `http://localhost:8000`
-- Interactive Swagger Documentation: `http://localhost:8000/docs`
+- Interactive API Documentation (Swagger): `http://localhost:8000/docs`
 - Health check: `http://localhost:8000/health`
 
 ### 2. Frontend Development Server
@@ -60,29 +66,34 @@ npm run dev
 
 ---
 
-## How to Import Demo Data
+## Core Capabilities & Real-Life Flow
 
-1. Open `http://localhost:5173` in your browser.
-2. Register a new user or sign in.
-3. On the **Dashboard** or **Transactions** page, click the **"Import Demo Data"** button.
-4. This loads 6 months (~330 transactions) of realistic synthetic data:
-   - Monthly salary income & recurring rent/utilities
-   - Daily spending across food, transport, shopping, subscriptions, and entertainment
-   - Specifically seeded unusual large transactions
-5. Duplicate prevention is enforced: clicking "Import Demo Data" again will safely detect and skip existing entries without creating duplicates.
+1. **User Authentication & Privacy**: Secure JWT authentication; users strictly see only their own financial data.
+2. **Load Sample Data**: Single button generates ~6 months of realistic synthetic transactions directly in code (`source="sample_data"`). Refuses duplicate generation (HTTP 409 Conflict) once loaded.
+3. **Plaid Sandbox Banking**:
+   - Connect sandbox bank account (`ins_109508`) with one click (no Plaid Link UI needed).
+   - Syncs transactions with cursor tracking; deduplicates on `plaid_transaction_id`.
+   - Positive Plaid amounts correctly treated as money leaving the account (expenses).
+   - "Simulate a purchase" creates everyday and occasional large transactions, triggering instant sync.
+   - Background daemon syncs every connected item every 2 minutes.
+4. **Receipt Scanner (EasyOCR)**:
+   - Upload receipt image (JPG/PNG/WebP up to 5 MB).
+   - Parses totals, merchants, dates, and categories.
+   - Interactive review form allows adjustments before saving with `source="receipt_ocr"`.
+5. **Automatic Model Training**:
+   - PyTorch LSTM trains automatically when expense history spans >= 60 days, retrains when record count changes >= 20%, and saves checkpoints.
+   - Isolation Forest fits automatically when transaction count >= 30, labeling unusual items with non-fraud vocabulary ("unusual", "suspicious").
+   - `GET /api/models/status` monitors operational readiness.
+6. **AI Financial Advisor**:
+   - Answers questions using real-time ledger context without hallucinations.
+   - Includes quick-prompt buttons for spending analysis and budget risk assessments.
 
 ---
 
-## Running Automated Tests
+## Verification Test Suite
 
-Run the comprehensive test suite with the virtual environment activated:
+Run the full end-to-end verification suite:
 ```powershell
-.\.venv\Scripts\python.exe backend\tests\test_full_system.py
+.\.venv\Scripts\python.exe backend\tests\test_live_system_v2.py
 ```
-Or run stage-specific test suites:
-- `backend\tests\test_stage1.py` (Auth & JWT)
-- `backend\tests\test_stage2.py` (Transaction CRUD & CSV)
-- `backend\tests\test_stage3.py` (Synthetic Data & Duplicate Prevention)
-- `backend\tests\test_stage4.py` (Dashboard Aggregations & Cash Flow)
-- `backend\tests\test_stage5.py` (PyTorch LSTM Forecast & Baseline Fallback)
-- `backend\tests\test_stage6.py` (Isolation Forest Anomalies & Review Flow)
+Validates all 17 integration checkpoints end-to-end.

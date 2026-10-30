@@ -19,7 +19,11 @@ class Transaction(Base):
     merchant = Column(String, nullable=True)
     description = Column(String, nullable=True)
     transaction_date = Column(DateTime, nullable=False)
-    source = Column(String, nullable=False, default="manual")
+    source = Column(String, nullable=False, default="manual")  # manual|sample_data|plaid_sandbox|receipt_ocr
+
+    # Plaid fields
+    plaid_transaction_id = Column(String, nullable=True, unique=True)
+    pending = Column(Boolean, default=False, nullable=False)
 
     # Anomaly fields for Stage 6
     is_anomaly = Column(Boolean, default=False, nullable=False)
@@ -35,3 +39,4 @@ class Transaction(Base):
     )
 
     owner = relationship("User", back_populates="transactions")
+

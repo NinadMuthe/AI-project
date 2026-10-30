@@ -5,8 +5,7 @@ import {
   fetchTransactions,
   createTransaction,
   deleteTransaction,
-  importCsv,
-  importDemoData,
+  loadSampleData,
 } from "../services/transaction";
 import { TransactionRead, TransactionCreate } from "../types/transaction";
 import { format } from "date-fns";
@@ -16,6 +15,7 @@ const TransactionsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [banner, setBanner] = useState<string | null>(null);
+  const [loadingSample, setLoadingSample] = useState(false);
 
   // New transaction form state
   const [newTx, setNewTx] = useState<TransactionCreate>({
@@ -25,11 +25,9 @@ const TransactionsPage: React.FC = () => {
     merchant: "",
     description: "",
     transaction_date: new Date().toISOString().slice(0, 10),
+    source: "manual",
   });
 
-  // CSV Import state
-  const [importFile, setImportFile] = useState<File | null>(null);
-  const [importing, setImporting] = useState(false);
   const [editingTx, setEditingTx] = useState<TransactionRead | null>(null);
 
   // Filters & Search
@@ -38,8 +36,8 @@ const TransactionsPage: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [isAdding, setIsAdding] = useState(false);
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (silent = false) => {
+    if (!silent) setLoading(true);
     setError(null);
     try {
       const data = await fetchTransactions({
@@ -49,14 +47,21 @@ const TransactionsPage: React.FC = () => {
       });
       setTransactions(data);
     } catch (e: any) {
-      setError(e.response?.data?.detail || e.message || "Failed to load transactions");
+      if (!silent) {
+        setError(e.response?.data?.detail || e.message || "Failed to load transactions");
+      }
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
   useEffect(() => {
     loadData();
+    // Auto-refresh transaction list every 30 seconds for live bank sync updates
+    const interval = setInterval(() => {
+      loadData(true);
+    }, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleAdd = async (e: React.FormEvent) => {
@@ -66,7 +71,10 @@ const TransactionsPage: React.FC = () => {
       return;
     }
     try {
-      const created = await createTransaction(newTx);
+      const created = await createTransaction({
+        ...newTx,
+        source: "manual",
+      });
       setTransactions((prev) => [created, ...prev]);
       setNewTx({
         amount: 0,
@@ -75,6 +83,7 @@ const TransactionsPage: React.FC = () => {
         merchant: "",
         description: "",
         transaction_date: new Date().toISOString().slice(0, 10),
+        source: "manual",
       });
       setIsAdding(false);
       setBanner("Transaction added successfully.");
@@ -94,31 +103,47 @@ const TransactionsPage: React.FC = () => {
     }
   };
 
-  const handleImportCsv = async () => {
-    if (!importFile) return;
-    setImporting(true);
+  const handleLoadSample = async () => {
+    setLoadingSample(true);
+    setError(null);
+    setBanner(null);
     try {
-      const result = await importCsv(importFile);
-      setBanner(`CSV Import Complete: ${result.imported} imported, ${result.duplicates} duplicate(s) skipped.`);
-      await loadData();
-    } catch (e: any) {
-      setError(e.response?.data?.detail || "CSV import failed. Check format.");
-    } finally {
-      setImporting(false);
-      setImportFile(null);
-    }
-  };
-
-  const handleImportDemo = async () => {
-    setImporting(true);
-    try {
-      const result = await importDemoData();
+      const result = await loadSampleData();
       setBanner(result.message);
       await loadData();
     } catch (e: any) {
-      setError(e.response?.data?.detail || "Demo import failed");
+      setError(e.response?.data?.detail || "Failed to load sample data.");
     } finally {
-      setImporting(false);
+      setLoadingSample(false);
+    }
+  };
+
+  const getSourceBadge = (source?: string | null) => {
+    switch (source) {
+      case "plaid_sandbox":
+        return (
+          <span className="text-[11px] px-2 py-0.5 rounded font-medium bg-amber-50 text-amber-700 border border-amber-200">
+            Plaid sandbox
+          </span>
+        );
+      case "receipt_ocr":
+        return (
+          <span className="text-[11px] px-2 py-0.5 rounded font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
+            Receipt OCR
+          </span>
+        );
+      case "sample_data":
+        return (
+          <span className="text-[11px] px-2 py-0.5 rounded font-medium bg-sky-50 text-sky-700 border border-sky-200">
+            Sample data
+          </span>
+        );
+      default:
+        return (
+          <span className="text-[11px] px-2 py-0.5 rounded font-medium bg-slate-100 text-slate-600 border border-slate-200">
+            Manual
+          </span>
+        );
     }
   };
 
@@ -128,7 +153,9 @@ const TransactionsPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Transactions Ledger</h1>
-          <p className="text-sm text-slate-500">Record, filter, search, and import financial transactions</p>
+          <p className="text-sm text-slate-500">
+            Real-time financial activity with automated categorization and ML audit
+          </p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -139,11 +166,11 @@ const TransactionsPage: React.FC = () => {
             {isAdding ? "Cancel" : "+ Add Transaction"}
           </button>
           <button
-            onClick={handleImportDemo}
-            disabled={importing}
+            onClick={handleLoadSample}
+            disabled={loadingSample}
             className="inline-flex items-center px-4 py-2 border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 text-sm font-medium rounded-md shadow-sm disabled:opacity-50"
           >
-            Import Demo Data
+            {loadingSample ? "Generating 6-Month Data..." : "Load Sample Data"}
           </button>
         </div>
       </div>
@@ -264,9 +291,8 @@ const TransactionsPage: React.FC = () => {
         </form>
       )}
 
-      {/* Filter and CSV Controls */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        {/* Search and Dropdowns */}
+      {/* Filter Controls */}
+      <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-2 flex-1">
           <input
             className="border border-slate-300 rounded-md px-3 py-1.5 text-sm w-full sm:w-56"
@@ -291,7 +317,7 @@ const TransactionsPage: React.FC = () => {
           />
           <button
             type="button"
-            onClick={loadData}
+            onClick={() => loadData()}
             className="px-3 py-1.5 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700"
           >
             Filter
@@ -310,24 +336,6 @@ const TransactionsPage: React.FC = () => {
               Reset
             </button>
           )}
-        </div>
-
-        {/* CSV Upload */}
-        <div className="flex items-center gap-2 border-t md:border-t-0 md:border-l border-slate-200 pt-3 md:pt-0 md:pl-4">
-          <input
-            type="file"
-            accept=".csv"
-            id="csv-file-input"
-            className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-            onChange={(e) => setImportFile(e.target.files?.[0] ?? null)}
-          />
-          <button
-            onClick={handleImportCsv}
-            disabled={!importFile || importing}
-            className="bg-indigo-600 text-white py-1 px-3 rounded text-xs hover:bg-indigo-700 disabled:opacity-50"
-          >
-            {importing ? "Uploading..." : "Import CSV"}
-          </button>
         </div>
       </div>
 
@@ -390,9 +398,7 @@ const TransactionsPage: React.FC = () => {
                       {tx.transaction_type === "income" ? "+" : "-"}${tx.amount.toFixed(2)}
                     </td>
                     <td className="py-3 px-4 text-center whitespace-nowrap">
-                      <span className="text-[11px] px-2 py-0.5 rounded bg-slate-100 text-slate-500 uppercase font-semibold">
-                        {tx.source ?? "manual"}
-                      </span>
+                      {getSourceBadge(tx.source)}
                     </td>
                     <td className="py-3 px-4 text-right whitespace-nowrap space-x-2">
                       <button
@@ -416,7 +422,7 @@ const TransactionsPage: React.FC = () => {
         ) : (
           <div className="py-12 text-center text-slate-400 text-sm">
             <p>No transactions found matching criteria.</p>
-            <p className="text-xs mt-1">Try resetting filters or click "Import Demo Data".</p>
+            <p className="text-xs mt-1">Try resetting filters or click "Load Sample Data".</p>
           </div>
         )}
       </div>
