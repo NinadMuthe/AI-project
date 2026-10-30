@@ -1,0 +1,5 @@
+import { useEffect, useState } from "react";
+import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { DashboardSummary } from "../types/dashboard";
+import { fetchDashboardSummary } from "../services/dashboard";
+export default function AnalyticsPage(){const [data,setData]=useState<DashboardSummary|null>(null);useEffect(()=>{fetchDashboardSummary().then(setData);},[]);if(!data)return <p>Loading analytics…</p>;return <div><h1 className="text-2xl font-semibold">Analytics</h1><p className="mt-1 text-sm text-slate-500">Based solely on your recorded transactions.</p><section className="mt-6 h-80 border bg-white p-4"><h2 className="font-medium">Monthly income and expenses</h2><ResponsiveContainer width="100%" height="90%"><BarChart data={data.monthly_cash_flow}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="month"/><YAxis/><Tooltip/><Legend/><Bar dataKey="income" fill="#2563eb"/><Bar dataKey="expenses" fill="#dc2626"/></BarChart></ResponsiveContainer></section></div>}
