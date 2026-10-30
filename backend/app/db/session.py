@@ -35,3 +35,8 @@ async def init_db():
             "is_reviewed BOOLEAN NOT NULL DEFAULT FALSE",
         ]:
             await conn.execute(text(f"ALTER TABLE transactions ADD COLUMN IF NOT EXISTS {col_def}"))
+        try:
+            await conn.execute(text("ALTER TABLE transactions ALTER COLUMN merchant DROP NOT NULL"))
+            await conn.execute(text("ALTER TABLE transactions ALTER COLUMN description DROP NOT NULL"))
+        except Exception:
+            pass
