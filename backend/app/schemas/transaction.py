@@ -37,5 +37,10 @@ class TransactionUpdate(BaseModel):
 class TransactionRead(TransactionBase):
     id: int
     user_id: int
+    is_anomaly: Optional[bool] = False
+    anomaly_score: Optional[float] = None
+    anomaly_reason: Optional[str] = None
+    anomaly_detected_at: Optional[datetime] = None
+    is_reviewed: Optional[bool] = False
 
     model_config = {"from_attributes": True}
