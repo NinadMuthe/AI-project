@@ -1,10 +1,12 @@
 // frontend/src/pages/AIAssistantPage.tsx
 import React, { useState } from "react";
-import { sendAssistantMessage } from "../services/assistant";
+import { sendAssistantMessage, ChatMessagePayload } from "../services/assistant";
 
 interface Message {
+  id: string;
   sender: "user" | "assistant";
   text: string;
+  source?: string;
   time: string;
 }
 
@@ -14,13 +16,16 @@ const QUICK_QUESTIONS = [
   "Will I run out of money before month end?",
   "Which expenses can I reduce?",
   "What unusual transactions were detected?",
+  "How much can I save next month?",
 ];
 
 const AIAssistantPage: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
+      id: "initial-msg",
       sender: "assistant",
-      text: "Hello! I am your FinPulse AI Financial Advisor. I have direct access to your verified ledger balance, recent spending categories, forecast models, and anomaly alerts. How can I assist your financial planning today?",
+      text: "Namaste! I am your FinPulse AI Daily Expense Coach. I have live access to your bank ledger in INR (₹), UPI payments, monthly bills, and anomaly alerts. How can I help you manage your expenses or savings today?",
+      source: "AI (Gemini)",
       time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     },
   ]);
@@ -31,30 +36,47 @@ const AIAssistantPage: React.FC = () => {
     const query = (messageText || input).trim();
     if (!query || loading) return;
 
+    const userMsgId = `user-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
     const userMsg: Message = {
+      id: userMsgId,
       sender: "user",
       text: query,
       time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     };
+
+    // Build history for backend (last 6 messages)
+    const historyPayload: ChatMessagePayload[] = messages
+      .filter((m) => m.id !== "initial-msg")
+      .slice(-6)
+      .map((m) => ({
+        role: m.sender === "user" ? "user" : "assistant",
+        content: m.text,
+      }));
 
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setLoading(true);
 
     try {
-      const res = await sendAssistantMessage(query);
+      const res = await sendAssistantMessage(query, historyPayload);
+      const botMsgId = `bot-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
       const botMsg: Message = {
+        id: botMsgId,
         sender: "assistant",
         text: res.response,
+        source: res.source || "AI (Gemini)",
         time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
       setMessages((prev) => [...prev, botMsg]);
     } catch (err: any) {
+      const errorMsgId = `err-${Date.now()}`;
       const errorMsg: Message = {
+        id: errorMsgId,
         sender: "assistant",
         text:
           err.response?.data?.detail ||
-          "I am temporarily unable to connect with the AI service. Please verify your connection or try again shortly.",
+          "I am temporarily unable to connect with the assistant. Please verify your connection or try again shortly.",
+        source: "Offline mode",
         time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
       setMessages((prev) => [...prev, errorMsg]);
@@ -64,18 +86,18 @@ const AIAssistantPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 flex flex-col h-[calc(100vh-8rem)]">
+    <div className="space-y-4 flex flex-col h-[calc(100vh-6.5rem)] pb-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-            <span>AI Financial Advisor</span>
-            <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-medium">
-              Gemini & LangChain
+            <span>Daily Expense Coach</span>
+            <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-medium">
+              Gemini & INR (₹)
             </span>
           </h1>
           <p className="text-sm text-slate-500">
-            Personalized, context-aware financial advice grounded in your actual transactions
+            Real-time conversational financial guidance grounded directly in your PostgreSQL ledger
           </p>
         </div>
       </div>
@@ -88,7 +110,7 @@ const AIAssistantPage: React.FC = () => {
             key={idx}
             onClick={() => handleSend(q)}
             disabled={loading}
-            className="text-xs bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 text-slate-700 px-3 py-1.5 rounded-full whitespace-nowrap shadow-xs transition-colors disabled:opacity-50"
+            className="text-xs bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 text-slate-700 px-3 py-1.5 rounded-full whitespace-nowrap shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
           >
             {q}
           </button>
@@ -96,37 +118,51 @@ const AIAssistantPage: React.FC = () => {
       </div>
 
       {/* Chat Messages Container */}
-      <div className="flex-1 bg-white rounded-lg border border-slate-200 shadow-sm p-4 overflow-y-auto space-y-4">
-        {messages.map((m, idx) => (
+      <div className="flex-1 bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-5 overflow-y-auto space-y-4">
+        {messages.map((m) => (
           <div
-            key={idx}
+            key={m.id}
             className={`flex flex-col ${m.sender === "user" ? "items-end" : "items-start"}`}
           >
             <div
-              className={`max-w-2xl px-4 py-3 rounded-2xl text-sm leading-relaxed ${
+              className={`max-w-2xl px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-xs ${
                 m.sender === "user"
-                  ? "bg-indigo-600 text-white rounded-br-none shadow-xs"
+                  ? "bg-emerald-600 text-white rounded-br-none"
                   : "bg-slate-50 border border-slate-200 text-slate-800 rounded-bl-none"
               }`}
             >
               <div className="whitespace-pre-wrap">{m.text}</div>
             </div>
-            <span className="text-[10px] text-slate-400 mt-1 px-1">{m.time}</span>
+
+            <div className="flex items-center gap-2 mt-1 px-1">
+              {m.sender === "assistant" && m.source && (
+                <span
+                  className={`text-[10px] font-medium px-1.5 py-0.2 rounded ${
+                    m.source.includes("AI")
+                      ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
+                      : "bg-slate-200 text-slate-600 border border-slate-300"
+                  }`}
+                >
+                  {m.source}
+                </span>
+              )}
+              <span className="text-[10px] text-slate-400">{m.time}</span>
+            </div>
           </div>
         ))}
 
         {loading && (
-          <div className="flex items-center space-x-2 text-slate-400 text-xs py-2">
-            <div className="w-2 h-2 rounded-full bg-indigo-600 animate-bounce"></div>
+          <div className="flex items-center space-x-2 text-slate-400 text-xs py-2 bg-slate-50 px-3 rounded-lg border border-slate-200 w-fit">
+            <div className="w-2 h-2 rounded-full bg-emerald-600 animate-bounce"></div>
             <div
-              className="w-2 h-2 rounded-full bg-indigo-600 animate-bounce"
+              className="w-2 h-2 rounded-full bg-emerald-600 animate-bounce"
               style={{ animationDelay: "0.2s" }}
             ></div>
             <div
-              className="w-2 h-2 rounded-full bg-indigo-600 animate-bounce"
+              className="w-2 h-2 rounded-full bg-emerald-600 animate-bounce"
               style={{ animationDelay: "0.4s" }}
             ></div>
-            <span>Analyzing financial context...</span>
+            <span className="text-slate-600 font-medium">Analyzing verified Indian ledger...</span>
           </div>
         )}
       </div>
@@ -143,14 +179,14 @@ const AIAssistantPage: React.FC = () => {
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask a question about your spending, budget, or balance..."
+          placeholder="Ask a question about your UPI spending, bills, balance, or savings in ₹..."
           disabled={loading}
-          className="flex-1 p-3 border border-slate-300 rounded-lg text-sm bg-white shadow-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
+          className="flex-1 p-3 border border-slate-300 rounded-xl text-sm bg-white shadow-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:opacity-50"
         />
         <button
           type="submit"
           disabled={loading || !input.trim()}
-          className="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium shadow-xs transition-colors disabled:opacity-50"
+          className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
         >
           Send
         </button>

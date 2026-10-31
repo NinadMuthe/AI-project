@@ -27,7 +27,9 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = Field(default="INFO")
 
     OPENAI_API_KEY: Optional[SecretStr] = Field(default=None)
-    GEMINI_MODEL: str = Field(default="gemini-1.5-flash")
+    GEMINI_MODEL: str = Field(default="gemini-3.8-flash")
+    DEMO_LIVE_FEED: bool = Field(default=True)
+    DEMO_FEED_INTERVAL_SECONDS: int = Field(default=90)
 
     model_config = {
         "env_file": str(ENV_PATH) if ENV_PATH.exists() else ".env",

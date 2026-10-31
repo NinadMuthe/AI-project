@@ -8,6 +8,8 @@ from sqlalchemy import select
 from ..dependencies import get_db
 from ..security import get_current_user_id
 from ...models.user import User
+from ...models.plaid_item import PlaidItem
+from ...services.plaid_service import auto_connect_user_bank
 from ...core.security import verify_password, get_password_hash, create_access_token
 from ...core.config import settings
 from pydantic import BaseModel, Field
@@ -52,6 +54,13 @@ async def register(data: RegisterIn, db: AsyncSession = Depends(get_db)):
     db.add(user)
     await db.commit()
     await db.refresh(user)
+
+    # Automatically connect and sync custom Indian bank feed for new user
+    try:
+        await auto_connect_user_bank(db, user.id)
+    except Exception as e:
+        pass
+
     return user
 
 
@@ -68,6 +77,17 @@ async def login(
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+    # Ensure bank is connected on login if missing
+    existing_item = (await db.execute(
+        select(PlaidItem).where(PlaidItem.user_id == user.id, PlaidItem.status == "active")
+    )).scalars().first()
+    if not existing_item:
+        try:
+            await auto_connect_user_bank(db, user.id)
+        except Exception:
+            pass
+
     token = create_access_token(
         data={"sub": str(user.id)},
         expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),

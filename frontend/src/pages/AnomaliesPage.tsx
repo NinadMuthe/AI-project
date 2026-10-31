@@ -7,7 +7,7 @@ import {
   AnomalyTransaction,
 } from "../services/anomaly";
 import { fetchModelsStatus, ModelDetail } from "../services/models";
-import { format } from "date-fns";
+import { formatINR, formatDateIN } from "../utils/format";
 
 const AnomaliesPage: React.FC = () => {
   const [anomalies, setAnomalies] = useState<AnomalyTransaction[]>([]);
@@ -70,6 +70,7 @@ const AnomaliesPage: React.FC = () => {
         text: `Transaction #${id} marked as reviewed.`,
         type: "success",
       });
+      setTimeout(() => setBanner(null), 4000);
     } catch (e: any) {
       setBanner({
         text: e.response?.data?.detail || "Could not mark transaction as reviewed",
@@ -87,13 +88,18 @@ const AnomaliesPage: React.FC = () => {
   const clearedCount = anomalies.filter((a) => a.is_reviewed).length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-12">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-bold text-slate-800">Unusual Spending Activity</h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+            <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+              <span>Unusual Spending Activity</span>
+              <span className="text-xs font-semibold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                INR (₹)
+              </span>
+            </h1>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
               Isolation Forest ML
             </span>
             {modelStatus && (
@@ -118,7 +124,7 @@ const AnomaliesPage: React.FC = () => {
         <button
           onClick={handleRunDetection}
           disabled={detecting}
-          className="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-md shadow-sm disabled:opacity-50"
+          className="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg shadow-xs transition-colors disabled:opacity-50"
         >
           {detecting ? (
             <>
@@ -137,7 +143,7 @@ const AnomaliesPage: React.FC = () => {
       {/* Banner */}
       {banner && (
         <div
-          className={`p-4 rounded-md text-sm flex items-center justify-between ${
+          className={`p-4 rounded-lg text-sm flex items-center justify-between ${
             banner.type === "success"
               ? "bg-emerald-50 border border-emerald-200 text-emerald-800"
               : "bg-rose-50 border border-rose-200 text-rose-800"
@@ -182,7 +188,7 @@ const AnomaliesPage: React.FC = () => {
               id="unreviewed-only"
               checked={filterUnreviewedOnly}
               onChange={(e) => setFilterUnreviewedOnly(e.target.checked)}
-              className="h-4 w-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+              className="h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500"
             />
             <label htmlFor="unreviewed-only" className="text-xs font-medium text-slate-600 cursor-pointer">
               Show unreviewed only
@@ -192,13 +198,13 @@ const AnomaliesPage: React.FC = () => {
 
         {loading ? (
           <div className="py-12 flex justify-center items-center text-slate-500">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mr-3"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mr-3"></div>
             Loading anomaly records...
           </div>
         ) : displayedAnomalies.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="bg-slate-50 text-slate-500 uppercase text-xs border-b border-slate-200">
+              <thead className="bg-slate-50 text-slate-500 uppercase text-[11px] tracking-wider border-b border-slate-200">
                 <tr>
                   <th className="py-2.5 px-4 font-semibold">Date</th>
                   <th className="py-2.5 px-4 font-semibold">Merchant & Details</th>
@@ -212,9 +218,9 @@ const AnomaliesPage: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {displayedAnomalies.map((tx) => (
-                  <tr key={tx.id} className="hover:bg-slate-50">
+                  <tr key={tx.id} className="hover:bg-slate-50/70 transition-colors">
                     <td className="py-3 px-4 text-slate-600 whitespace-nowrap">
-                      {format(new Date(tx.transaction_date), "MMM d, yyyy")}
+                      {formatDateIN(tx.transaction_date)}
                     </td>
                     <td className="py-3 px-4 max-w-xs">
                       <div className="font-semibold text-slate-800">{tx.merchant || "-"}</div>
@@ -224,7 +230,7 @@ const AnomaliesPage: React.FC = () => {
                     </td>
                     <td className="py-3 px-4 text-slate-700 whitespace-nowrap">{tx.category}</td>
                     <td className="py-3 px-4 text-right font-bold text-rose-600 whitespace-nowrap">
-                      ${tx.amount.toFixed(2)}
+                      {formatINR(tx.amount)}
                     </td>
                     <td className="py-3 px-4 text-xs text-slate-700 max-w-sm">
                       <span className="font-medium text-amber-900 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
@@ -266,8 +272,7 @@ const AnomaliesPage: React.FC = () => {
           </div>
         ) : (
           <div className="py-12 text-center text-slate-400 text-sm">
-            <p>No unusual transactions found matching criteria.</p>
-            <p className="text-xs mt-1">Run an anomaly check or import transactions to analyze.</p>
+            <p>No unusual transactions found.</p>
           </div>
         )}
       </div>

@@ -15,28 +15,36 @@ from sqlalchemy import select
 from .api.routes import router
 from .db.session import init_db, AsyncSessionLocal
 from .models.plaid_item import PlaidItem
-from .services.plaid_service import sync_all_items
+from .services.plaid_service import sync_all_items, simulate_live_indian_transaction
 from .ml.anomaly_detector import run_anomaly_detection
+from .core.config import settings
 
 logger = logging.getLogger("finpulse")
 
 
 async def _plaid_background_sync_loop():
-    logger.info("Plaid background sync scheduled (runs every 120 seconds).")
+    logger.info("Bank background sync and live feed started.")
+    interval = max(30, settings.DEMO_FEED_INTERVAL_SECONDS)
     while True:
         try:
-            await asyncio.sleep(120)
+            await asyncio.sleep(interval)
             async with AsyncSessionLocal() as db:
                 user_ids_stmt = select(PlaidItem.user_id).where(PlaidItem.status == "active").distinct()
                 user_ids = (await db.execute(user_ids_stmt)).scalars().all()
                 for uid in user_ids:
                     try:
+                        # 1. Sync any existing updates
                         res = await sync_all_items(db, uid)
                         if res.get("synced", 0) > 0:
-                            logger.info(f"Background Plaid sync added {res['synced']} txs for user {uid}")
+                            logger.info("Background sync added %s txs for user %s", res["synced"], uid)
                             await run_anomaly_detection(db, uid)
+
+                        # 2. If DEMO_LIVE_FEED is enabled, simulate a fresh daily purchase
+                        if settings.DEMO_LIVE_FEED:
+                            sim_res = await simulate_live_indian_transaction(db, uid)
+                            logger.info("Live feed generated: %s for user %s", sim_res.get("message"), uid)
                     except Exception as err:
-                        logger.error("Background sync user error: %s", type(err).__name__)
+                        logger.error("Background sync/live feed user error: %s", type(err).__name__)
         except asyncio.CancelledError:
             break
         except Exception as e:

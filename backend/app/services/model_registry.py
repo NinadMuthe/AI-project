@@ -62,3 +62,4 @@ def should_retrain(user_id: int, model_type: str, current_record_count: int) -> 
         return True
     # Retrain when count changes by >= 20%
     return abs(current_record_count - last_count) / last_count >= 0.20
+

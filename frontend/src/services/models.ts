@@ -17,3 +17,4 @@ export const fetchModelsStatus = async (): Promise<ModelsStatusResponse> => {
   const resp = await api.get<ModelsStatusResponse>("/models/status");
   return resp.data;
 };
+

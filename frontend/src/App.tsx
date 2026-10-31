@@ -7,7 +7,7 @@ import ReceiptScannerPage from "./pages/ReceiptScannerPage";
 import ForecastPage from "./pages/ForecastPage";
 import AnomaliesPage from "./pages/AnomaliesPage";
 import AIAssistantPage from "./pages/AIAssistantPage";
-import BankConnectionPage from "./pages/BankConnectionPage";
+import SettingsPage from "./pages/SettingsPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import PlannedPage from "./pages/PlannedPage";
@@ -32,12 +32,11 @@ const ProtectedLayout: React.FC = () => {
     { to: "/forecast", label: "Forecast", icon: "📈" },
     { to: "/anomalies", label: "Anomalies", icon: "🛡️" },
     { to: "/ai-assistant", label: "AI Assistant", icon: "✨" },
-    { to: "/bank-connection", label: "Bank Connection", icon: "🏦" },
+    { to: "/settings", label: "Settings", icon: "⚙️" },
   ];
 
   const plannedLinks = [
     { to: "/budgets", label: "Budgets", icon: "🎯" },
-    { to: "/settings", label: "Settings", icon: "⚙️" },
   ];
 
   return (
@@ -47,13 +46,13 @@ const ProtectedLayout: React.FC = () => {
         {/* Brand header */}
         <div className="p-6 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
-              FP
+            <div className="w-9 h-9 rounded-lg bg-emerald-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
+              ₹
             </div>
             <div>
               <span className="text-lg font-bold text-white tracking-tight">FinPulse AI</span>
-              <span className="block text-[10px] uppercase font-semibold text-indigo-400 tracking-wider">
-                Financial Engine
+              <span className="block text-[10px] uppercase font-semibold text-emerald-400 tracking-wider">
+                India Expense Manager
               </span>
             </div>
           </div>
@@ -63,7 +62,7 @@ const ProtectedLayout: React.FC = () => {
         <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
           <div>
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 px-3">
-              Active Modules
+              Daily Expense
             </span>
             <nav className="mt-2 space-y-1">
               {coreLinks.map(({ to, label, icon }) => (
@@ -73,7 +72,7 @@ const ProtectedLayout: React.FC = () => {
                   className={({ isActive }) =>
                     `flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
                       isActive
-                        ? "bg-indigo-600 text-white shadow-sm"
+                        ? "bg-emerald-600 text-white shadow-sm"
                         : "text-slate-300 hover:bg-slate-800 hover:text-white"
                     }`
                   }
@@ -90,7 +89,7 @@ const ProtectedLayout: React.FC = () => {
               <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                 Next Phase
               </span>
-              <span className="text-[10px] font-bold text-indigo-400 bg-indigo-950/70 border border-indigo-800 px-1.5 py-0.2 rounded">
+              <span className="text-[10px] font-bold text-slate-400 bg-slate-800 border border-slate-700 px-1.5 py-0.2 rounded">
                 PLANNED
               </span>
             </div>
@@ -102,7 +101,7 @@ const ProtectedLayout: React.FC = () => {
                   className={({ isActive }) =>
                     `flex items-center px-3 py-2 text-xs font-medium rounded-lg transition-colors ${
                       isActive
-                        ? "bg-indigo-900/60 text-indigo-200 border border-indigo-700"
+                        ? "bg-emerald-950/60 text-emerald-200 border border-emerald-800"
                         : "text-slate-400 hover:bg-slate-800/60 hover:text-slate-200"
                     }`
                   }
@@ -169,7 +168,7 @@ const App: React.FC = () => {
         <Route path="/forecast" element={<ForecastPage />} />
         <Route path="/anomalies" element={<AnomaliesPage />} />
         <Route path="/ai-assistant" element={<AIAssistantPage />} />
-        <Route path="/bank-connection" element={<BankConnectionPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
 
         {/* Planned Next Phase Pages */}
         <Route
@@ -179,16 +178,6 @@ const App: React.FC = () => {
               featureName="Budgets"
               description="Configurable monthly category spending limits with progress indicators and threshold alert webhooks."
               icon="🎯"
-            />
-          }
-        />
-        <Route
-          path="/settings"
-          element={
-            <PlannedPage
-              featureName="Settings & Preferences"
-              description="User profile management, security key rotation, notification preferences, and currency settings."
-              icon="⚙️"
             />
           }
         />

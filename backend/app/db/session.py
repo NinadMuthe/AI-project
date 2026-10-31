@@ -26,8 +26,10 @@ async def get_db():
 async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-        # Ensure Stage 6 anomaly columns exist on public.transactions
+        # Ensure required columns exist on public.transactions
         for col_def in [
+            "currency VARCHAR NOT NULL DEFAULT 'INR'",
+            "payment_mode VARCHAR NOT NULL DEFAULT 'UPI'",
             "is_anomaly BOOLEAN NOT NULL DEFAULT FALSE",
             "anomaly_score DOUBLE PRECISION",
             "anomaly_reason VARCHAR",

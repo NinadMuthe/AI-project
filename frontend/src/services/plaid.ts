@@ -31,6 +31,8 @@ export const syncPlaid = async (): Promise<{
   return resp.data;
 };
 
+export const syncPlaidTransactions = syncPlaid;
+
 export const simulatePurchase = async (): Promise<{
   simulated: boolean;
   merchant?: string;
@@ -41,3 +43,4 @@ export const simulatePurchase = async (): Promise<{
   const resp = await api.post("/plaid/simulate-transaction");
   return resp.data;
 };
+

@@ -1,7 +1,7 @@
 # backend/app/api/routes/anomaly.py
 from datetime import datetime
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, Body
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -16,6 +16,7 @@ router = APIRouter(prefix="/anomalies", tags=["anomalies"])
 
 @router.post("/detect", response_model=AnomalyDetectionResult)
 async def trigger_detection(
+    payload: dict = Body(None),
     db: AsyncSession = Depends(get_db),
     user_id: int = Depends(get_current_user_id),
 ):
@@ -90,8 +91,10 @@ async def list_anomalies(
 
 
 @router.post("/{tx_id}/review", response_model=AnomalyTransactionRead)
+@router.put("/{tx_id}/review", response_model=AnomalyTransactionRead, include_in_schema=False)
 async def mark_anomaly_reviewed(
     tx_id: int,
+    payload: dict = Body(None),
     db: AsyncSession = Depends(get_db),
     user_id: int = Depends(get_current_user_id),
 ):

@@ -20,3 +20,4 @@ export const scanReceiptImage = async (file: File): Promise<OcrScanResult> => {
   });
   return resp.data;
 };
+

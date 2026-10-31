@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { fetchForecast, ForecastResponse } from "../services/forecast";
 import { fetchModelsStatus, ModelDetail } from "../services/models";
+import { formatINR, formatDateIN } from "../utils/format";
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -12,7 +13,6 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import { format } from "date-fns";
 
 const ForecastPage: React.FC = () => {
   const [data, setData] = useState<ForecastResponse | null>(null);
@@ -47,7 +47,7 @@ const ForecastPage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600"></div>
         <span className="ml-3 text-slate-600 font-medium">Training and running PyTorch LSTM forecast...</span>
       </div>
     );
@@ -71,18 +71,23 @@ const ForecastPage: React.FC = () => {
   if (!data) return null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-12">
       {/* Header and Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-bold text-slate-800">Cash Flow & Expense Forecast</h1>
+            <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+              <span>Expense & Cash Flow Forecast</span>
+              <span className="text-xs font-semibold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                INR (₹)
+              </span>
+            </h1>
             {data.is_baseline ? (
               <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300">
                 BASELINE PROJECTION
               </span>
             ) : (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800 border border-indigo-300">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">
                 PyTorch LSTM Neural Network
               </span>
             )}
@@ -100,7 +105,9 @@ const ForecastPage: React.FC = () => {
               </span>
             )}
           </div>
-          <p className="text-sm text-slate-500 mt-1">{data.message || data.model_used}</p>
+          <p className="text-sm text-slate-500 mt-1">
+            {data.message || data.model_used} &bull; Projections are statistical estimates, not guarantees.
+          </p>
         </div>
 
         {/* Horizon selector */}
@@ -109,31 +116,30 @@ const ForecastPage: React.FC = () => {
           <select
             value={horizon}
             onChange={(e) => setHorizon(Number(e.target.value))}
-            className="border border-slate-300 rounded-md px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
           >
             <option value={15}>Next 15 Days</option>
             <option value={30}>Next 30 Days</option>
             <option value={45}>Next 45 Days</option>
-            <option value={60}>Next 60 Days</option>
           </select>
         </div>
       </div>
 
-      {/* Model explanation banner */}
+      {/* Baseline notice if under threshold */}
       {data.is_baseline && (
         <div className="bg-amber-50 border border-amber-200 text-amber-900 px-4 py-3 rounded-lg text-sm">
-          <strong>Notice:</strong> This account does not yet have 60+ days of expense history. A 7-day moving average
-          baseline forecast is displayed instead of neural model output.
+          <strong>Notice:</strong> Account requires 60+ days of history to activate the neural PyTorch LSTM model.
+          Displaying moving-average baseline projection (estimate only, not guaranteed).
         </div>
       )}
 
       {/* Shortage Warning Banner */}
       {data.shortage_flag && (
-        <div className="bg-rose-50 border-l-4 border-rose-500 p-4 rounded-r-lg">
+        <div className="bg-rose-50 border-l-4 border-rose-500 p-4 rounded-r-lg shadow-xs">
           <div className="flex items-start">
-            <div className="flex-shrink-0 text-rose-500 font-bold text-xl mr-3">⚠</div>
+            <div className="flex-shrink-0 text-rose-500 font-bold text-xl mr-3">⚠️</div>
             <div>
-              <h3 className="text-sm font-bold text-rose-800">Projected Month-End Cash Shortage Detected</h3>
+              <h3 className="text-sm font-bold text-rose-800">Potential Month-End Shortage Warning</h3>
               <p className="text-sm text-rose-700 mt-1">{data.shortage_warning}</p>
             </div>
           </div>
@@ -144,8 +150,8 @@ const ForecastPage: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
           <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">Current Balance</span>
-          <div className="mt-1 text-2xl font-bold text-slate-900">${data.current_balance.toFixed(2)}</div>
-          <span className="text-xs text-slate-400">Real-time ledger balance</span>
+          <div className="mt-1 text-2xl font-bold text-slate-900">{formatINR(data.current_balance)}</div>
+          <span className="text-xs text-slate-400">Verified live ledger balance</span>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
           <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
@@ -156,19 +162,19 @@ const ForecastPage: React.FC = () => {
               data.projected_end_balance >= 0 ? "text-emerald-600" : "text-rose-600"
             }`}
           >
-            ${data.projected_end_balance.toFixed(2)}
+            {formatINR(data.projected_end_balance)}
           </div>
-          <span className="text-xs text-slate-400">At end of forecast window</span>
+          <span className="text-xs text-slate-400">Estimated end-of-window balance</span>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
           <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">Cash Flow Risk</span>
           <div
             className={`mt-1 text-2xl font-bold ${data.shortage_flag ? "text-rose-600" : "text-emerald-600"}`}
           >
-            {data.shortage_flag ? "High Shortage Risk" : "Stable Buffer"}
+            {data.shortage_flag ? "Shortage Risk" : "Stable Buffer"}
           </div>
           <span className="text-xs text-slate-400">
-            {data.shortage_flag ? `Deficit onset: ${data.shortage_date}` : "Positive balance maintained"}
+            {data.shortage_flag ? `Onset: ${formatDateIN(data.shortage_date)}` : "No deficit projected"}
           </span>
         </div>
       </div>
@@ -176,9 +182,9 @@ const ForecastPage: React.FC = () => {
       {/* Recharts Forecast Chart */}
       <div className="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
         <div className="mb-4">
-          <h2 className="text-base font-semibold text-slate-800">Historical vs Forecasted Daily Expenses</h2>
+          <h2 className="text-base font-semibold text-slate-800">Historical Actuals vs Forecasted Daily Expenses</h2>
           <p className="text-xs text-slate-500">
-            Solid line depicts verified historical spend; dashed line represents model projections.
+            Solid line shows actual past expenses; dashed line shows future model estimates.
           </p>
         </div>
 
@@ -190,27 +196,20 @@ const ForecastPage: React.FC = () => {
               stroke="#94a3b8"
               fontSize={11}
               tickLine={false}
-              tickFormatter={(d) => {
-                try {
-                  return format(new Date(d), "MMM d");
-                } catch {
-                  return d;
-                }
-              }}
+              tickFormatter={(d) => formatDateIN(d)}
             />
-            <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} />
+            <YAxis
+              stroke="#94a3b8"
+              fontSize={11}
+              tickLine={false}
+              tickFormatter={(v) => `₹${Number(v) >= 1000 ? `${(Number(v) / 1000).toFixed(0)}k` : v}`}
+            />
             <Tooltip
               formatter={(value: any, name: string) => {
                 if (value === null || value === undefined) return ["-", name];
-                return [`$${Number(value).toFixed(2)}`, name];
+                return [formatINR(Number(value)), name];
               }}
-              labelFormatter={(label) => {
-                try {
-                  return format(new Date(label), "EEE, MMM d, yyyy");
-                } catch {
-                  return label;
-                }
-              }}
+              labelFormatter={(label) => formatDateIN(label)}
               contentStyle={{ backgroundColor: "#ffffff", borderRadius: "8px", border: "1px solid #e2e8f0" }}
             />
             <Legend />
@@ -225,7 +224,7 @@ const ForecastPage: React.FC = () => {
               activeDot={{ r: 5 }}
               connectNulls={false}
             />
-            {/* Forecast Spend: Visually Distinct Dashed Indigo/Amber Line */}
+            {/* Forecast Spend: Visually Distinct Dashed Amber Line */}
             <Line
               type="monotone"
               dataKey="predicted_expense"
@@ -260,20 +259,20 @@ const ForecastPage: React.FC = () => {
                 .map((p, idx) => (
                   <tr key={idx} className="hover:bg-slate-50">
                     <td className="py-2.5 px-4 text-slate-700 font-medium">
-                      {format(new Date(p.date), "EEE, MMM d, yyyy")}
+                      {formatDateIN(p.date)}
                     </td>
                     <td className="py-2.5 px-4 text-xs text-slate-500">
-                      {data.is_baseline ? "7-Day Moving Avg" : "LSTM Autoregressive"}
+                      {data.is_baseline ? "7-Day Moving Avg" : "LSTM Neural Network"}
                     </td>
                     <td className="py-2.5 px-4 text-right font-semibold text-amber-600">
-                      ${p.predicted_expense?.toFixed(2)}
+                      {formatINR(p.predicted_expense)}
                     </td>
                     <td
                       className={`py-2.5 px-4 text-right font-semibold ${
                         (p.projected_balance || 0) >= 0 ? "text-slate-800" : "text-rose-600"
                       }`}
                     >
-                      ${p.projected_balance?.toFixed(2)}
+                      {formatINR(p.projected_balance)}
                     </td>
                   </tr>
                 ))}

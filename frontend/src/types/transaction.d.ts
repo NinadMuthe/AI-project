@@ -1,11 +1,13 @@
 // frontend/src/types/transaction.d.ts
 export interface TransactionBase {
   amount: number;
+  currency?: string;
   transaction_type: "income" | "expense";
   category: string;
   merchant?: string | null;
   description?: string | null;
   transaction_date: string; // ISO string
+  payment_mode?: string;
   source?: string | null;
 }
 
@@ -13,11 +15,13 @@ export interface TransactionCreate extends TransactionBase {}
 
 export interface TransactionUpdate {
   amount?: number;
+  currency?: string;
   transaction_type?: "income" | "expense";
   category?: string;
   merchant?: string | null;
   description?: string | null;
   transaction_date?: string;
+  payment_mode?: string;
   source?: string | null;
 }
 

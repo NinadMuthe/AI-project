@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..dependencies import get_db
 from ..security import get_current_user_id
-from ...services.plaid_service import connect_sandbox, sync_all_items, simulate_transaction, get_status
+from ...services.plaid_service import auto_connect_user_bank, sync_all_items, simulate_live_indian_transaction, get_status
 
 router = APIRouter(prefix="/plaid", tags=["plaid"])
 
@@ -14,12 +14,11 @@ async def connect_bank_sandbox(
     db: AsyncSession = Depends(get_db),
     user_id: int = Depends(get_current_user_id),
 ):
-    """Connect a Plaid sandbox bank account and run first sync. No Plaid Link needed."""
+    """Ensure Plaid sandbox Indian bank account is connected and synced."""
     try:
-        result = await connect_sandbox(db, user_id)
-        return result
+        return await auto_connect_user_bank(db, user_id)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Plaid connection failed: {type(e).__name__}: {str(e)[:200]}")
+        raise HTTPException(status_code=500, detail=f"Bank setup failed: {type(e).__name__}")
 
 
 @router.post("/sync")
@@ -27,12 +26,11 @@ async def sync_plaid(
     db: AsyncSession = Depends(get_db),
     user_id: int = Depends(get_current_user_id),
 ):
-    """Manually trigger a Plaid transaction sync for the current user."""
+    """Trigger bank transaction refresh/sync for the current user."""
     try:
-        result = await sync_all_items(db, user_id)
-        return result
+        return await sync_all_items(db, user_id)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Sync failed: {type(e).__name__}: {str(e)[:200]}")
+        raise HTTPException(status_code=500, detail=f"Sync failed: {type(e).__name__}")
 
 
 @router.post("/simulate-transaction")
@@ -40,12 +38,11 @@ async def simulate_purchase(
     db: AsyncSession = Depends(get_db),
     user_id: int = Depends(get_current_user_id),
 ):
-    """Simulate a sandbox bank transaction via webhook, then sync."""
+    """Simulate a fresh live daily purchase (e.g. Swiggy, Zomato, Blinkit)."""
     try:
-        result = await simulate_transaction(db, user_id)
-        return result
+        return await simulate_live_indian_transaction(db, user_id)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Simulation failed: {type(e).__name__}: {str(e)[:200]}")
+        raise HTTPException(status_code=500, detail=f"Simulation failed: {type(e).__name__}")
 
 
 @router.get("/status")
@@ -53,6 +50,5 @@ async def plaid_connection_status(
     db: AsyncSession = Depends(get_db),
     user_id: int = Depends(get_current_user_id),
 ):
-    """Return Plaid connection status for the current user (never returns the access token)."""
+    """Return bank connection status for the current user (never returns access token)."""
     return await get_status(db, user_id)
-

@@ -3,7 +3,6 @@ from fastapi import APIRouter
 
 from .auth import router as auth_router
 from .transaction import router as transaction_router
-from .sample_data import router as sample_data_router
 from .dashboard import router as dashboard_router
 from .budget import router as budget_router
 from .forecast import router as forecast_router
@@ -16,7 +15,6 @@ from .assistant import router as assistant_router
 router = APIRouter()
 router.include_router(auth_router)
 router.include_router(transaction_router)
-router.include_router(sample_data_router)
 router.include_router(dashboard_router)
 router.include_router(budget_router)
 router.include_router(forecast_router)

@@ -42,6 +42,15 @@ def create_sequences(data: np.ndarray, seq_len: int = 7) -> Tuple[torch.Tensor, 
     ).unsqueeze(-1)
 
 
+async def train_lstm_for_user(db: AsyncSession, user_id: int) -> bool:
+    """Auto-trains LSTM if at least 60 days of history exist."""
+    try:
+        await generate_expense_forecast(db, user_id, horizon_days=30)
+        return True
+    except Exception:
+        return False
+
+
 async def generate_expense_forecast(
     db: AsyncSession,
     user_id: int,
@@ -113,7 +122,6 @@ async def generate_expense_forecast(
         curr += timedelta(days=1)
 
     expense_arr = np.array(all_expenses, dtype=np.float32)
-    # STEP 3 requirement: Requires at least 60 days of expense history
     MIN_DAYS_FOR_LSTM = 60
     seq_len = 7
 
@@ -132,7 +140,7 @@ async def generate_expense_forecast(
         status_message = (
             f"Insufficient history to train neural LSTM model ({total_span_days} days available, "
             f"requires >= {MIN_DAYS_FOR_LSTM} days of history). "
-            "Displaying moving-average baseline projection."
+            "Displaying moving-average baseline projection (estimate only, not guaranteed)."
         )
         update_model_status(
             user_id,
@@ -142,11 +150,11 @@ async def generate_expense_forecast(
             message=f"{total_span_days}/{MIN_DAYS_FOR_LSTM} days needed for PyTorch LSTM",
         )
         recent_window = all_expenses[-14:] if len(all_expenses) >= 14 else all_expenses
-        avg_daily = float(np.mean(recent_window)) if recent_window else 50.0
+        avg_daily = float(np.mean(recent_window)) if recent_window else 500.0
 
         for i in range(horizon_days):
             pred_date = max_date + timedelta(days=i + 1)
-            multiplier = 1.2 if pred_date.weekday() in [4, 5] else 0.95
+            multiplier = 1.25 if pred_date.weekday() in [5, 6] else 0.95
             predictions.append(round(max(0.0, avg_daily * multiplier), 2))
     else:
         # REAL PYTORCH LSTM TRAINING & CHECKPOINT MANAGEMENT
@@ -154,7 +162,7 @@ async def generate_expense_forecast(
         model_name = "PyTorch LSTM (Trained on User Expense History)"
         status_message = (
             f"Trained PyTorch LSTM neural network on {total_span_days} days of daily expense data "
-            f"({non_zero_days} active spending days)."
+            f"({non_zero_days} active spending days). All projections are statistical estimates, not guarantees."
         )
 
         max_val = float(np.max(expense_arr)) if np.max(expense_arr) > 0 else 1.0
@@ -254,9 +262,10 @@ async def generate_expense_forecast(
 
     shortage_warning = None
     if shortage_flag:
+        formatted_shortage = f"₹{shortage_amount:,.2f}"
         shortage_warning = (
-            f"Alert: Projected cash deficit detected starting {shortage_date}. "
-            f"Expected deficit reaches ${shortage_amount:.2f}. Consider reducing discretionary spending."
+            f"Alert: Estimated cash deficit detected starting {shortage_date}. "
+            f"Projected deficit reaches {formatted_shortage}. Consider reducing discretionary spending."
         )
 
     return ForecastResponse(

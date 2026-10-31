@@ -20,3 +20,4 @@ async def get_models_status_route(
     State: not_enough_data / training / ready / failed
     """
     return get_user_models_status(user_id)
+

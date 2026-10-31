@@ -20,8 +20,3 @@ export const updateTransaction = async (id: number, data: TransactionUpdate) => 
 export const deleteTransaction = async (id: number) => {
   await api.delete(`/transactions/${id}`);
 };
-
-export const loadSampleData = async () => {
-  const resp = await api.post<{ inserted: number; message: string }>("/transactions/load-sample");
-  return resp.data;
-};
